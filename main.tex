@@ -1,0 +1,151 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[margin = 1in]{geometry}
+
+%\RequirePackage[backend=biber,sorting=nty, style=chicago-authordate, natbib=true, hyperref=true, backref=false, isbn=false]{biblatex}  % reference manager
+%\DeclareLanguageMapping{american}{american-apa} %added
+
+\usepackage[authordate,backend=biber,ibidtracker=false,uniquename=false,maxcitenames=3,dashed=false]{biblatex-chicago}
+
+
+
+\renewcommand{\footnoterule}{%
+  \kern -3pt
+  \hrule width \linewidth height 0.5pt
+  \kern 2.6pt
+}
+
+\usepackage{setspace}
+\usepackage{chngcntr}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{float}
+
+
+
+
+\setlength{\tabcolsep}{4pt}
+
+%\RequirePackage[backend=biber,sorting=nty, style=chicago-authordate, natbib=true, hyperref=true, backref=false, issn=false, isbn=false]{biblatex}
+
+\doublespacing
+\addbibresource{bib/PoliceResidency.bib}
+
+\title{Reweighting Estimator Variation in Staggered Differences-in-Differences Designs}
+\author{Eric Dobbie}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    \noindent In settings with staggered treatment adoption, two-way fixed effects estimators have been shown to produce biased estimates of the average treatment effect on the treated (ATT) when treatment effects are heterogeneous. A growing family of estimators addresses this problem, but applied researchers have little guidance for selecting an estimator among these options. I propose a robustness diagnostic test that leverages confidence intervals from multiple estimators to characterize the sensitivity of ATT estimates to estimator choice. I demonstrate the approach using an application to police residency requirements, a policy setting with canonical staggered adoption. The tool provides applied researchers with a transparent, interpretable summary of estimator sensitivity without requiring a commitment to any single identifying assumption.
+\end{abstract}
+
+\newpage
+
+\section{Introduction}
+
+\begin{itemize}
+    \item Canonical DiD design and core assumptions
+\end{itemize}
+
+Differences-in-Differences (DiD) is a commonly used method in political science. In order to estimate causal effects of policy interventions, DiD approaches compare units that have received the policy change to those that have not received the policy change under the assumption that the outcome of interest would have changed the same way in each unit absent the intervention.
+
+\begin{itemize}
+    \item TWFE is the primary estimator used in DiD settings
+\end{itemize}
+
+According to \textcite{chiu2026causal}, two-way fixed effect (TWFE) models are the predominant method for analyzing panel data for causal identification, with 64 out of 102 studies published in leading political science journals utilizing a TWFE model for their analysis. 
+
+\begin{itemize}
+    \item Applied work often has staggered treatments
+    \item If treatment timing matters for the effect size the TWFE estimator is biased
+\end{itemize}
+
+In applied political science work, policy treatments are often staggered as different geographical areas apply the policies at different times. 
+
+If the timing of these treatments changes the effect of the treatment, then the TWFE estimators that are commonly applied in these settings will be biased. 
+
+\section{Staggered Treatments Lead to Bad Comparisons}
+
+\begin{itemize}
+    \item Introduce the idea that we can decompose the TWFE estimator into a weighted average of all 2x2 DiD comparisons
+\end{itemize}
+
+
+The problem with the classic TWFE approach is so-called ``forbidden comparisons'' where treated units act as controls for units treated in later time periods. While the estimate produced by the TWFE estimator can be decomposed into all possible $2\times2$ DiD estimates \parencite{goodman2021difference}, this decomposition does not require the weights on each individual $2\times 2$ DiD estimate to be positive. The negative weights can lead to problems where every treatment cohort has an effect of one sign and the TWFE estimator gives the opposite sign. While current evidence suggests that the sign flipping problem is rare in applied settings \parencite{chiu2026causal}, the comparisons that cause these problems are still relatively counter-intuitive and lead to difficulty in interpreting the results of the analysis.
+
+\subsection{Goodman-Bacon Bias}
+
+\begin{itemize}
+    \item Using the decomposition, we can see that we will sometimes use treated units as controls when adoption is staggered
+    \item The bias depends on the severity of the treatment effect hererogeneity across cohorts
+\end{itemize}
+
+\section{Existing Estimators for Staggered Treatment Settings}
+
+\begin{itemize}
+    \item Cover the family of relevant estimators
+    \begin{itemize}
+        \item Callaway Sant'anna
+        \item Sun and Abraham
+        \item Stacked Regression
+    \end{itemize}
+    \item Briefly describe how each estimator works using intuition rather than technical descriptions
+    \begin{itemize}
+        \item Core additional assumptions
+        \item Treatment of control units (include never-takers?)
+        \item Aggregation for ATT estimate (where do the weights come from)
+    \end{itemize}
+    \item Summarize this in a table?
+    \item The core idea: these estimators are all related and solve the same theoretical problem but can produce different estimates. There is no clear guidance on how to select or how important selecting the 'correct' estimator is
+\end{itemize}
+
+\section{Diagnosing Estimator Sensitivity}
+
+\begin{itemize}
+    \item Proposed robustness display: For each estimator, find the point estimate and the confidence interval at a selected level.
+    \item Display the union of these confidence intervals across all estimators at the selected level as a continuous band
+    \item The width of the band shows the sensitivity of the estimator to selection of estimators
+\end{itemize}
+
+\section{Simulation}
+  \subsection{When Estimates Are Robust}
+  \subsection{When Estimates Diverge}
+
+\section{Application}
+
+\subsection{\textcite{payson2023resreq} Replication}
+
+\textcite{payson2023resreq} present an analysis of police residency requirements. Residency requirements, as the name suggests, are a policy intervention whereby municipal employees are required to live inside or nearby the municipality in which they work. The logic behind residency requirements is that officers who interact with members of a community will be less likely to discriminate against them, and requiring officers to live in the community leads to forced contact with the discriminated against group, which could give them a sense of empathy for those in the community (\cite{pettigrew_recent_2011}, \cite{hopkins_politicized_2010}, \cite{hubert_social_2022}). The authors analyze the effect of removing a residency requirement on the probability of a fatal encounter with police officers. The empirical approach is a DiD approach with treatments assigned at the city level, using a two-way fixed effects (TWFE) estimator and a stacked regression to estimate the ATT. They find that removing a residency requirement significantly reduces the probability of a fatal encounter with police. This runs counter to prevailing theory, which predicts that residency requirements will improve policing performance through social contact and local knowledge (\cite{hubert_social_2022, pettigrew_recent_2011}. 
+
+Applying the procedure shown above, we can first plot the TWFE regression weights using \textcite{goodman2021difference} decomposition to show which comparisons are driving the results in the paper.
+
+One prominent solution to this problem in TWFE is put forward by \textcite{callaway2021difference}, who propose estimating a ``group-time average treatment effect'' where ``groups'' are units treated at the same time period. The \textcite{callaway2021difference} approach produces dyadic ATT estimates for each treatment group and time period in the data. Using a simple aggregation scheme, averaging across all post-treatment comparisons, \hyperref[fig:paysonrep]{Figure \ref{fig:paysonrep}} shows the average of the ATT estimates for each treatment group in \textcite{payson2023resreq}, utilizing the simple DiD specification without covariates as reported in Table 3 of \textcite{payson2023resreq}, which contains the primary result of the paper, showing a statistically significant reduction in fatalities when removing a residency requirement. As can be seen in the figure, the only one group (2004) is estimated to have a negative effect on fatal encounters. All other groups are statistically insignificant or positive effects.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{figures/replication.png}
+    \caption{ATT Estimates by Treatment Year \parencite{payson2023resreq}}
+    \label{fig:paysonrep}
+\end{figure}
+
+Next, I aggregate these ATT estimates using weights proportional to group size to obtain an overall estimate of the ATT. Using model specifications (1) and (2) from Table 3 in \textcite{payson2023resreq} and applying doubly robust estimators as recommended by \textcite{callaway2021difference} produces the ATT estimates in \hyperref[tab:paysonreptab]{Table \ref{tab:paysonreptab}}. In contrast to the findings reported by \textcite{payson2023resreq}, using the alternate doubly robust estimators to adjust for variation in treatment timing does not produce a negative effect.
+
+\input{tables/paysonreptab}
+
+Put together, the group-level aggregation and the overall aggregation across model specifications provide evidence that the negative effect of removing a residency requirement on fatal encounters with police is not robust to these specification adjustments. As the existing evidence is not sufficient to draw conclusions about the effect of residency requirements on misconduct among police, I present an alternate approach that circumvents the issues presented in this section using a synthetic control analysis.
+
+
+\section{Conclusion}
+
+
+\newpage
+
+\printbibliography
+
+\newpage
+
+\end{document}
