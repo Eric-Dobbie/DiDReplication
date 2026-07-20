@@ -1,0 +1,5 @@
+# Payson & Parinandi replication data is large and lives outside version control.
+# Point the driver at it via DIDREP_DATA (see R/run_extraction.R).
+/data/
+*.Rhistory
+.RData
