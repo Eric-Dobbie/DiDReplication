@@ -40,9 +40,20 @@ agg <- left_join(agg, pooled, by = "estimator") %>%
 # convex hull of the three aggregate points (a triangle for 3 non-collinear pts)
 hull <- agg[chull(agg$x, agg$y), c("x", "y")]
 
-# label anchors so ggrepel pushes the CS/SA labels (near-coincident) apart
-agg$lx <- c(CS = -0.35, SA = 0.45, stacked = -0.45)[as.character(agg$estimator)]
-agg$ly <- c(CS = 0.045, SA = 0.045, stacked = 0.16)[as.character(agg$estimator)]
+# cohort labels for the influential / pivot stacked atoms:
+#   - high FWL weight (the cohorts pulling the stacked aggregate), or
+#   - a sign-flipping pivot (positive estimate = the no-clean-controls atom)
+stk_col <- atoms %>%                       # high-weight column (negative estimate)
+  filter(estimator == "stacked" & weight > 0.06 & estimate < 0) %>%
+  mutate(cohort = as.integer(group))
+stk_piv <- atoms %>%                       # sign-flipping pivot (positive estimate)
+  filter(estimator == "stacked" & estimate > 0) %>%
+  mutate(cohort = sprintf("%d (no clean\ncontrols)", as.integer(group)))
+
+# aggregate labels anchored in the open right/upper area; the left side is
+# reserved for the green cohort column labels
+agg$lx <- c(CS = 0.55, SA = 0.55, stacked = 0.32)[as.character(agg$estimator)]
+agg$ly <- c(CS = 0.145, SA = 0.055, stacked = 0.30)[as.character(agg$estimator)]
 
 p <- ggplot() +
   # shaded convex hull between the aggregated estimates
@@ -57,6 +68,23 @@ p <- ggplot() +
   # aggregate markers
   geom_point(data = agg, aes(x = x, y = y, fill = estimator),
              shape = 23, size = 5.4, color = "black", stroke = 0.8) +
+  # cohort labels: high-weight column, pushed left
+  geom_text_repel(data = stk_col,
+                  aes(x = estimate, y = weight, label = cohort),
+                  color = pal["stacked"], size = 3.0, fontface = "bold",
+                  nudge_x = -0.30 - stk_col$estimate, direction = "y", hjust = 1,
+                  segment.color = pal["stacked"], segment.size = 0.25,
+                  min.segment.length = 0, box.padding = 0.2,
+                  seed = 7, show.legend = FALSE) +
+  # cohort label: the 2002 pivot, pushed right
+  geom_text_repel(data = stk_piv,
+                  aes(x = estimate, y = weight, label = cohort),
+                  color = pal["stacked"], size = 2.9, fontface = "bold",
+                  lineheight = 0.85,
+                  nudge_x = 0.22, nudge_y = 0.03, hjust = 0,
+                  segment.color = pal["stacked"], segment.size = 0.25,
+                  min.segment.length = 0, box.padding = 0.3,
+                  seed = 7, show.legend = FALSE) +
   # aggregate labels with leader lines
   geom_text_repel(data = agg,
                   aes(x = x, y = y, label = lab, color = estimator),
