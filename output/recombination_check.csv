@@ -1,0 +1,5 @@
+"estimator","pooled_label","reconstructed_pooled","package_pooled","abs_diff","rel_diff"
+"CS","did::aggte(type='simple') overall ATT",0.0447650208209399,0.0447650208209399,6.93889390390723e-18,1.55007051860041e-16
+"SA","fixest::sunab(agg='att') overall ATT",0.0517102254476703,0.0517102254476703,0,0
+"stacked","pooled felm(any.fatalities ~ no.req | agency.id + year.cohort) [unweighted, no covariates]",-0.104398756770185,-0.104397217091685,1.53967850000103e-06,1.47482714855209e-05
+"stacked_naive_residALLrows","pooled felm(any.fatalities ~ no.req | agency.id + year.cohort) [unweighted, no covariates]",-0.0907582745677078,-0.104397217091685,0.0136389425239768,0.130644694407886
