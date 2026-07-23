@@ -98,7 +98,7 @@ p <- ggplot() +
   scale_x_continuous(breaks = scales::pretty_breaks(7)) +
   labs(
     title    = "Weight vs. component estimate across three DiD estimators",
-    subtitle = "Outcome: P(fatal civilian encounter). Points = component atoms; diamonds = overall aggregated ATT;\nshaded region = convex hull of the three aggregates.",
+    subtitle = "Outcome: P(fatal civilian encounter). Points = component atoms; diamonds = overall aggregated ATT.\nCS and SA coincide exactly here (balanced panel), so the hull collapses to the CS/SA-Stacked segment.",
     x = "Component estimate (effect on probability of a fatal encounter)",
     y = "Aggregation weight"
   ) +
