@@ -48,8 +48,11 @@ suppressMessages({
 # -----------------------------------------------------------------------------
 extract_cs_atoms <- function(data, yname, tname, idname, gname,
                              xformla = ~1, control_group = "nevertreated",
-                             clustervars = NULL, ...) {
+                             clustervars = NULL, seed = 0, ...) {
 
+  # att_gt uses a multiplier bootstrap for inference by default; seed it so the
+  # reported SEs are reproducible (point estimates/weights are deterministic).
+  set.seed(seed)
   mp <- did::att_gt(yname = yname, tname = tname, idname = idname, gname = gname,
                     xformla = xformla, control_group = control_group,
                     clustervars = clustervars, data = data, ...)
@@ -114,13 +117,15 @@ extract_cs_atoms <- function(data, yname, tname, idname, gname,
 # -----------------------------------------------------------------------------
 extract_sa_atoms <- function(data, yname, idname, tname, gname,
                              never_value = 0, ref_c = 10000,
-                             cluster = NULL, ...) {
+                             cluster = NULL, covars = NULL, ...) {
 
   d <- data
   d[["._coh"]] <- ifelse(d[[gname]] == never_value, ref_c, d[[gname]])
 
+  # optional covariates enter as linear controls alongside the sunab term
+  rhs_cov <- if (is.null(covars)) "" else paste0(paste(covars, collapse = " + "), " + ")
   fml <- stats::as.formula(sprintf(
-    "%s ~ sunab(._coh, %s) | %s + %s", yname, tname, idname, tname))
+    "%s ~ %ssunab(._coh, %s) | %s + %s", yname, rhs_cov, tname, idname, tname))
   cl  <- if (is.null(cluster)) stats::as.formula(paste0("~", idname)) else cluster
   res <- fixest::feols(fml, data = d, cluster = cl, ...)
 
@@ -136,6 +141,12 @@ extract_sa_atoms <- function(data, yname, idname, tname, gname,
   mm_parse <- regmatches(cn, regexec("::(-?[0-9]+):.*::([0-9]+)$", cn))
   e <- as.integer(vapply(mm_parse, function(z) z[2], character(1)))
   g <- as.integer(vapply(mm_parse, function(z) z[3], character(1)))
+
+  # keep only the sunab cohort x period coefficients (covariate rows, if any,
+  # do not parse to an (e, g) and are dropped)
+  is_atom <- !is.na(e) & !is.na(g)
+  e <- e[is_atom]; g <- g[is_atom]; est <- est[is_atom]; se <- se[is_atom]
+  cn <- cn[is_atom]
 
   # exact fixest att weights: observation counts per cohort x period cell
   mmx    <- stats::model.matrix(res)
