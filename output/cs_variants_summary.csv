@@ -1,0 +1,7 @@
+"spec","label","control_group","covariates","overall","se","recon","abs_diff","n_atoms"
+"never_nocov","CS  never-treated,  no covariates","nevertreated","none",0.0447650208209399,0.0650349988696777,0.0447650208209399,6.93889390390723e-18,260
+"never_cov","CS  never-treated,  + covariates (paper m2)","nevertreated","paper 4",0.0818223460860149,0.0823472273433997,0.0818223460860149,1.38777878078145e-17,172
+"notyet_nocov","CS  not-yet-treated,  no covariates","notyettreated","none",0.0561686069377494,0.0656108047808058,0.0561686069377494,6.93889390390723e-18,260
+"notyet_cov","CS  not-yet-treated,  + covariates","notyettreated","paper 4",0.0770432277738247,0.0842108609651363,0.0770432277738247,0,183
+"stacked_m4","Stacked  (paper Table 3: + covariates + weights)","never-treated (clean)","paper 4 + wts",-0.0908090808214521,0.0043288708766928,NA,NA,NA
+"stacked_plain","Stacked  (plain, no covariates)","never-treated (clean)","none",-0.104397217091685,0.0382690468295203,NA,NA,NA
