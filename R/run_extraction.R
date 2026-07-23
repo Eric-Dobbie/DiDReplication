@@ -46,6 +46,16 @@ S_STACK <- "cohort"                       # sub-experiment / stack id
 dta <- read.csv(file.path(DATA_DIR, "dta.csv"))
 dta[[UNITN]] <- as.numeric(factor(dta[[UNIT]]))
 
+# Enforce irreversible treatment: two agencies (memphis TN, portsmouth NH) both
+# ADOPTED and later DROPPED a requirement, so year.changed is not unit-constant.
+# The paper flags exactly these two (callaway_replication.R drops them), and
+# did >= 2.2 now errors on reversible gname. Collapse each unit to its FIRST
+# treatment year (standard staggered-adoption timing) -- this reproduces the
+# behavior of did 2.1.2 for CS and applies the same definition to SA, so the two
+# estimators use a consistent cohort assignment.
+dta[[COHORT]] <- ave(dta[[COHORT]], dta[[UNIT]],
+                     FUN = function(x) { v <- x[!is.na(x)]; if (length(v)) min(v) else NA_real_ })
+
 # P&P coding of the cohort variable for CS/SA (from callaway_replication.R):
 #   never-treated (always has a requirement)  -> 0   (clean controls)
 #   always-no-requirement (treated pre-sample)-> 1987 (dropped by att_gt: no pre)

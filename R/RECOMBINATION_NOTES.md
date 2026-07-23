@@ -37,7 +37,7 @@ Their stacked specification was recovered from `stacked_fatal.csv` and
 | Estimator | Reconstructed | Package pooled | Abs diff | Rel diff |
 |---|---|---|---|---|
 | CS (`aggte` simple) | 0.04476502 | 0.04476502 | 6.9e-18 | 1.6e-16 |
-| SA (`sunab` agg="att") | 0.05171023 | 0.05171023 | 0 | 0 |
+| SA (`sunab` agg="att") | 0.04476502 | 0.04476502 | 0 | 0 |
 | Stacked (FWL, est-sample resid) | −0.10439876 | −0.10439722 | 1.5e-6 | 1.5e-5 |
 | Stacked (naive, resid on ALL rows) | −0.09075827 | −0.10439722 | 1.4e-2 | **13.1%** |
 
@@ -45,6 +45,26 @@ CS and SA match to machine precision: the exact aggregation weights are
 extracted from the fitted objects — `pg` (group shares) from `did`'s internal
 one-row-per-unit analysis data, and `colSums(sign(model.matrix))` (cohort ×
 period observation counts) from `fixest`.
+
+## Reversible treatment and the CS ≡ SA equivalence
+
+Two agencies — **memphis TN** and **portsmouth NH** — both *adopted* and later
+*dropped* a residency requirement, so `year.changed` is not unit-constant. The
+paper itself flags exactly these two (`callaway_replication.R` drops them). We
+collapse each unit to its **first treatment year** (standard staggered-adoption
+timing; `did` ≥ 2.2 errors on reversible `gname`). This reproduces the CS
+estimate that `did` 2.1.2 produced implicitly, and applies the *same* cohort
+definition to SA.
+
+With a consistent cohort definition, **CS and SA are identical to machine
+precision** (overall and every cohort, max diff ~4e-13). This is expected: for a
+**balanced panel with a never-treated control group**, the CS "simple" and SA
+"att" aggregations put the same weight (∝ cohort size) on the same 2×2 DiD
+cells, so the two estimators coincide. An earlier version double-counted the two
+reversible units in SA (cohort assigned row-wise), which spuriously pushed SA to
+0.0517; the corrected value is 0.0448 = CS. The only figure where CS and SA
+differ is the calendar-time vs. event-time view, because that reflects the
+aggregation *dimension*, not the estimator.
 
 ## Where the stacked check "failed", and the diagnosed reason
 

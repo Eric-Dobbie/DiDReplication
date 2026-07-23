@@ -70,7 +70,7 @@ p <- ggplot(atoms, aes(x = estimate, y = weight, color = estimator)) +
   scale_x_continuous(breaks = scales::pretty_breaks(9)) +
   labs(
     title    = "Component estimate vs. aggregation weight, by estimator",
-    subtitle = "Outcome: P(fatal civilian encounter). Each panel has its own weight scale so CS/SA weights are legible.\nVertical line + diamond = overall aggregated ATT; labels mark the highest-weight cohorts.",
+    subtitle = "Outcome: P(fatal civilian encounter). Each panel has its own weight scale. CS and SA coincide exactly here\n(balanced panel), so their panels are identical. Vertical line + diamond = overall ATT; labels = highest-weight cohorts.",
     x = "Component estimate (effect on probability of a fatal encounter)",
     y = "Aggregation weight"
   ) +
