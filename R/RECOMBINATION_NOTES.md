@@ -107,6 +107,36 @@ treated agencies). Two structural atoms, both faithful to their code:
 Cohorts 2000, 2001, 2003 drop out entirely (NA/NaN coefficient: no clean
 controls and no within-stack treatment contrast).
 
+## Reconstructing the stacked dataset from first principles
+
+We do not have the authors' stack-construction code, so `reconstruct_stacked.R`
+rebuilds `stacked_fatal.csv` from `dta.csv` to test how well the rule is
+recovered. It matches **exactly**: same 278,324 rows, same cohorts, identical
+row-set, and zero mismatches on `treat`, `no.req`, `any.fatalities`,
+`scaled.year`, and `year.cohort`.
+
+The recovered construction rule:
+- Stacks are indexed by treatment cohort `g` (a policy CHANGE year); cohorts
+  with `g >= 2000` are kept (the outcome is only observed from 2000).
+- Treated rows of stack `g` = the `dta` rows with `year.changed == g`. Because
+  `year.changed` is stored row-wise, the two reversible agencies (memphis,
+  portsmouth) are split at their change point automatically — the pre-change
+  segment goes to the adopt-cohort, the post-change segment to the drop-cohort
+  (reproducing the 22/12 and 29/5 partial panels).
+- Clean controls = the 741 never-changing agencies, full panels, attached only
+  when `g - 4 >= 2000` (=> cohorts 2004–2020).
+
+**The "implicit window" is ±4 (4 pre, 4 post), but it does NOT trim rows.** Every
+unit keeps its full 1987–2020 panel; the window only (a) gates control
+eligibility (a cohort needs 4 observable pre-periods) and (b) defines
+`scaled.year` and the entropy-balancing sample. A literal ±4-windowed rebuild
+(9 rows/unit) would therefore NOT match — the provided file is full-panel.
+
+The single component `reconstruct_stacked.R` cannot reproduce is the `weights`
+column: treated weights are 1, but the control weights are entropy-balancing
+(`ebal`) weights that require the authors' balancing specification (covariates,
+moments, normalization — they sum to ~70 per cohort).
+
 ## CS/SA note
 
 For CS and SA the outcome window (2000–2020) forces the effective sample:
