@@ -233,18 +233,10 @@
     \input{tables/att/att}
 \end{frame}
 
-\begin{frame}{Aside: Are the $\tau_{i,j}$ values equivalent across estimators?}
-Short answer: Sometimes
 
-\vspace{2.5mm}
+\section{Application}
 
-\textcite{callaway2021difference} and \textcite{sun2021estimating} follow the same decomposition procedure, so they are implicitly dealing with the same $\tau$ matrix with different weighting processes.
-
-\vspace{2.5mm}
-
-We need a parallel trends assumption for \textcite{gardner2022two} and \textcite{borusyak2024revisiting} to produce the same $\tau$ matrix in expectation.
-    
-\end{frame}
+\end{document}
 
 \begin{frame}{Estimator Equivalence Under Parallel Trends}
     \textcite{gardner2022two} uses a two-stage regression approach that can be reduced to the $\tau_{i,j}$ estimation and weighting approach. The first stage residualizes the outcome variable using untreated observation unit and period fixed effects:
@@ -276,52 +268,6 @@ We need a parallel trends assumption for \textcite{gardner2022two} and \textcite
     Under parallel trends, the counterfactual estimation procedure in \textcite{borusyak2024revisiting} is equivalent to the \textcite{gardner2022two} process. This means that, not only are the $\tau_{i,j}$ matrices equivalent, the estimators actually produce identical results when parallel trends hold.
 \end{frame}
 
-\begin{frame}{Asymptotic $\tau$ Matrix Equivalence}
-    Note that all of these estimators use consistent procedures to estimate these $\tau$ values. This means that, as $N \rightarrow \infty$, the estimators $\hat{\tau}_{i,j} \rightarrow_p \tau_{i,j}$.
-    \vspace{2.5mm}
-
-    Therefore, asymptotically, each estimator differs only in the weighting procedure. This makes \textcite{gardner2022two} and \textcite{borusyak2024revisiting} asymptotically equivalent estimators.
-\end{frame}
-
-\begin{frame}{Can Estimators Vary?}
-    Can estimates of $\delta$, the ATT, vary across estimators?
-
-    \textbf{Yes.}
-
-    \vspace{2.5mm}
-    We can return to our general form to see why. When the $\tau$ matrix is fixed across estimators then each unique estimator simply provides a weighting vector $w$ to solve equation \ref{eq:delta}.
-
-    \vspace{2.5mm}
-
-    Different weighting procedures will produce different estimates under certain conditions. It is possible for the weighted averages to produce equivalent estimates by chance, but under certain conditions these estimators can produce different estimates as they have different weights.
-\end{frame}
-
-\begin{frame}{When will we observe estimator differences?}
-    On to the second key question: Under what conditions does estimator selection matter?
-
-    \vspace{2.5mm}
-
-    We have shown that the $\tau_{i,j}$ matrix is asymptotically equivalent across estimators, so the driving difference will be derived from the weights. When will different weights matter?
-\end{frame}
-
-\begin{frame}{Differences Across Estimators}
-    We can express the difference between any two reweighting estimators, with estimates $\hat{\tau}$ and $\hat{\tau}^\prime$, with weighting vector $w$ and $w^\prime$:
-    \begin{equation}
-        \hat{\tau} - \hat{\tau}^\prime = w\tau - w^\prime \tau = (w - w^\prime) \tau
-    \end{equation}
-
-    Observation: The magnitude of disagreement between any two fixed estimators is increasing in the variance of the $\tau_{i,j}$ values.
-\end{frame}
-
-\section{A Diagnostic Test for Estimator Selection}
-
-\begin{frame}{$Var(\tau_{i,j})$ as a diagnostic tool}
-    Note that, the lower the variance in $\tau_{i,j}$ values, the less our weighting choice matters. In the case with no heterogeneous effects, such that Var$(\tau_{i,j})=0$, the difference in the weighting vectors is completely inconsequential, such that the difference between the estimators is, necessarily, zero. 
-
-    \vspace{2.5mm}
-
-    Based on this intuition, I propose using the variance in $\hat{\tau_{i,t}}$ as a diagnostic tool for sensitivity to estimator selection.
-\end{frame}
 
 \section{Simulation}
 
@@ -378,6 +324,69 @@ We need a parallel trends assumption for \textcite{gardner2022two} and \textcite
     \end{enumerate}
 \end{frame}
 
-\section{Application}
 
-\end{document}
+
+\begin{frame}{When will we observe estimator differences?}
+    On to the second key question: Under what conditions does estimator selection matter?
+
+    \vspace{2.5mm}
+
+    We have shown that the $\tau_{i,j}$ matrix is asymptotically equivalent across estimators, so the driving difference will be derived from the weights. When will different weights matter?
+\end{frame}
+
+\begin{frame}{Differences Across Estimators}
+    We can express the difference between any two reweighting estimators, with estimates $\hat{\tau}$ and $\hat{\tau}^\prime$, with weighting vector $w$ and $w^\prime$:
+    \begin{equation}
+        \hat{\tau} - \hat{\tau}^\prime = w\tau - w^\prime \tau = (w - w^\prime) \tau
+    \end{equation}
+
+    Observation: The magnitude of disagreement between any two fixed estimators is increasing in the variance of the $\tau_{i,j}$ values.
+\end{frame}
+
+\section{A Diagnostic Test for Estimator Selection}
+
+\begin{frame}{$Var(\tau_{i,j})$ as a diagnostic tool}
+    Note that, the lower the variance in $\tau_{i,j}$ values, the less our weighting choice matters. In the case with no heterogeneous effects, such that Var$(\tau_{i,j})=0$, the difference in the weighting vectors is completely inconsequential, such that the difference between the estimators is, necessarily, zero. 
+
+    \vspace{2.5mm}
+
+    Based on this intuition, I propose using the variance in $\hat{\tau_{i,t}}$ as a diagnostic tool for sensitivity to estimator selection.
+\end{frame}
+
+
+\begin{frame}{Aside: Are the $\tau_{i,j}$ values equivalent across estimators?}
+Short answer: Sometimes
+
+\vspace{2.5mm}
+
+\textcite{callaway2021difference} and \textcite{sun2021estimating} follow the same decomposition procedure, so they are implicitly dealing with the same $\tau$ matrix with different weighting processes.
+
+\vspace{2.5mm}
+
+We need a parallel trends assumption for \textcite{gardner2022two} and \textcite{borusyak2024revisiting} to produce the same $\tau$ matrix in expectation.
+    
+\end{frame}
+
+
+
+\begin{frame}{Asymptotic $\tau$ Matrix Equivalence}
+    Note that all of these estimators use consistent procedures to estimate these $\tau$ values. This means that, as $N \rightarrow \infty$, the estimators $\hat{\tau}_{i,j} \rightarrow_p \tau_{i,j}$.
+    \vspace{2.5mm}
+
+    Therefore, asymptotically, each estimator differs only in the weighting procedure. This makes \textcite{gardner2022two} and \textcite{borusyak2024revisiting} asymptotically equivalent estimators.
+\end{frame}
+
+\begin{frame}{Can Estimators Vary?}
+    Can estimates of $\delta$, the ATT, vary across estimators?
+
+    \textbf{Yes.}
+
+    \vspace{2.5mm}
+    We can return to our general form to see why. When the $\tau$ matrix is fixed across estimators then each unique estimator simply provides a weighting vector $w$ to solve equation \ref{eq:delta}.
+
+    \vspace{2.5mm}
+
+    Different weighting procedures will produce different estimates under certain conditions. It is possible for the weighted averages to produce equivalent estimates by chance, but under certain conditions these estimators can produce different estimates as they have different weights.
+\end{frame}
+
+

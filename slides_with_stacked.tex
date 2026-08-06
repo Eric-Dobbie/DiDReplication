@@ -1,0 +1,113 @@
+\documentclass[11pt]{beamer}
+\usepackage{graphicx,hyperref}
+\usepackage{subfigure}
+\usepackage[english]{babel}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usepackage{diagbox}
+\usepackage[authordate]{biblatex-chicago}
+\usepackage{setspace}
+\usepackage{chngcntr}
+\usepackage[table]{xcolor}
+\usepackage{appendixnumberbeamer}
+\usepackage{tikz}
+\usepackage{csquotes}
+\usepackage{longtable}
+
+\usetikzlibrary{arrows,positioning} 
+\tikzset{
+    %Define standard arrow tip
+    >=stealth',
+    %Define style for boxes
+    punkt/.style={
+           rectangle,
+           rounded corners,
+           draw=black, very thick,
+           text width=6.5em,
+           minimum height=2em,
+           text centered},
+    % Define arrow style
+    pil/.style={
+           ->,
+           thick,
+           shorten <=2pt,
+           shorten >=2pt,}
+}
+\usepackage{hyperref}
+\addbibresource{bib/PoliceResidency.bib}
+
+
+\usetheme{Madrid}
+\definecolor{EmoryBlue}{RGB}{1,33,105}
+\usecolortheme[named=EmoryBlue]{structure}
+
+
+
+    \title[Estimator Selection]{Estimator Selection Diagnostics in Staggered Differences-in-Differences}
+    \author[Eric Dobbie]{Eric Dobbie}
+    \institute[Emory]{Emory University\\Department of Political Science} 
+    \date{\today}  
+    \logo{\includegraphics[width=1.19cm,height=0.4cm]{slidefigures/School.png}}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\titlepage
+\end{frame}
+
+\section{Background}
+
+\begin{frame}{Staggered Treatment DiD}
+    \begin{itemize}
+        \item Common applied DiD settings are complicated, with treatments being applied at different time periods for different geographic units.
+        \item These setting are especially common in policy evaluation settings, where policy is not adopted uniformly across different jurisdictions.
+        \item Typical applied work used TWFE estimators in these applications
+    \end{itemize}
+\end{frame}
+
+\section{Staggered Treatments Lead to Bad Comparisons}
+
+\begin{frame}{Goodman-Bacon Bias}
+    \begin{itemize}
+        \item However, TWFE has a problem. \textcite{goodman2021difference} showed that using TWFE leads to unintuitive comparisons, where the treatment group in a previous period serves as the control group for units treated in the current period.
+        \item These comparisons bias the estimate of the ATT when using TWFE models
+    \end{itemize}
+
+    The bias term is given by 
+    \begin{equation}\label{eq:biastwfe}
+        \text{Bias} = \sum_{k \not = U} \sum_{\mathcal{L} > k} \sigma_{k \mathcal{L}} (1 - \mu_{k\mathcal{L}})[ATT_k(POST(\mathcal{L})) - ATT_k(MID(k,\mathcal{L}))]
+    \end{equation}
+    Which is the change in treatment effect across periods.
+\end{frame}
+
+\section{Goodman-Bacon Decomposition}
+
+\begin{frame}{Goodman-Bacon Decomposition}
+    \textcite{goodman2021difference} decomposes the TWFE model into all possible 2x2 DiD comparisons.
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\linewidth]{slidefigures/comparisons.png}
+        \label{fig:GB_Decomp}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Goodman-Bacon Decomposition}
+    There are two (related) problems that arise from this:
+
+    \begin{enumerate}
+        \item Some of these comparisons (namely Panel D) are unintuitive, strange comparisons
+        \item When we include these strange comparisons, the weights on some of these 2x2 DiD cells can be negative in the aggregation process, leading to biased estimates.
+    \end{enumerate}
+
+     Because of these problems, TWFE estimators are generally not advisable in staggered treatment settings
+\end{frame}
+
+\section{Reweighting Estimators}
+
+\begin{frame}{The Solution: Restrict Focus to Clean Comparisons}
+    There is a class of modern estimators that works by restricting the analysis to clean comparisons of treated groups with not-yet-treated or never-treated control groups.
+
+    \vspace{2.5mm}
+
+    For this paper I will focus on the most widely adopted set of these estimators (\cite{callaway2021difference, sun2021estimating})
+\end{frame}
