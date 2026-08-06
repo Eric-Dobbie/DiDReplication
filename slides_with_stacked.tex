@@ -111,3 +111,57 @@
 
     For this paper I will focus on the most widely adopted set of these estimators (\cite{callaway2021difference, sun2021estimating})
 \end{frame}
+
+\section{Stacked Regression}
+
+\begin{frame}{Stacked Regression: Process}
+
+In order to run a stacked regression (\cite{cengiz2019effect}):
+
+\begin{enumerate}
+    \item Select a window around treatment for for the selection of clean controls, with equal number of periods before and after treatment.
+    \item Identify clean controls based on selected control group (not-yet-treated or never-treated)
+    \item Generate the ``stack'' with all units treated in time $t$ with all clean controls in the window selected.
+\end{enumerate}
+
+Once each stack has been formed, they are row binded together to form a full stacked dataset.
+    
+\end{frame}
+
+\begin{frame}{Stacked Regression: Estimation}
+    The standard stacked regression setup then uses a two-way fixed effect estimator:
+
+    \begin{equation}
+        Y_{i,t} = \alpha_{i,s} + \gamma_{t,s} + \delta D_{i,t,s} + \epsilon
+    \end{equation}
+
+    where: 
+    
+    \begin{itemize}
+        \item $\alpha_{i,s}$ is a unit by stack fixed effect
+        \item $\gamma_{t,s}$ is a year by stack fixed effect
+        \item $\delta$ is the ATT estimate.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Reconstructing P\&P}
+
+I used the standard stacked regression approach to reconstruct the stacked dataset. Without access to the code they used to build the stacked dataset, which is not included in their replication files, I need to test some of the assumptions.
+    
+\end{frame}
+
+\begin{frame}{Variation in Dataset Size by Assumptions}
+
+\end{frame}
+
+\begin{frame}{P\&P Stacked Regression}
+
+\cite{payson2023resreq} made some strange assumptions.
+
+\begin{itemize}
+    \item They use all clean control units rather than those that are clean within a window
+\end{itemize}
+    
+\end{frame}
+
+\end{document}
