@@ -43,9 +43,9 @@ top_lab <- atoms %>%
   group_by(estimator) %>%
   mutate(rk = rank(-weight, ties.method = "first")) %>%
   filter(rk <= ifelse(estimator == "stacked", 5, 3) |
-           (estimator == "stacked" & estimate > 0)) %>%   # keep 2002 pivot
+           (estimator == "stacked" & group == 2002)) %>%   # keep the 2002 no-control cohort
   ungroup() %>%
-  mutate(clab = ifelse(estimator == "stacked" & estimate > 0,
+  mutate(clab = ifelse(estimator == "stacked" & group == 2002,
                        paste0(group, "\n(no controls)"), as.character(group)))
 
 p <- ggplot(atoms, aes(x = estimate, y = weight, color = estimator)) +
