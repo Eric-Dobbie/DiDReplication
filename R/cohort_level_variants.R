@@ -60,9 +60,10 @@ dat$spec <- factor(dat$spec, levels=c("CS: never-treated","CS: not-yet-treated",
 
 # ---- stacked reference (per panel): plain vs covariates+weights -------------
 stk <- read.csv(file.path(DATA_DIR, "stacked_fatal.csv"))
-b_plain <- coef(felm(any.fatalities ~ no.req | agency.id + year.cohort | 0 | agency.id, data=stk))["no.req"]
+stk$agency_stack <- paste(stk$agency.id, stk$cohort, sep="__")   # leakage-free unit-by-stack FE
+b_plain <- coef(felm(any.fatalities ~ no.req | agency_stack + year.cohort | 0 | agency.id, data=stk))["no.req"]
 b_m4    <- coef(felm(any.fatalities ~ no.req + log.pop + log.med.inc + pct.white + pct.white.officers.imputed |
-                       agency.id + year.cohort | 0 | agency.id, data=stk, weights=stk$weights))["no.req"]
+                       agency_stack + year.cohort | 0 | agency.id, data=stk, weights=stk$weights))["no.req"]
 ref <- data.frame(cov=factor(c("no covariates","+ paper covariates"),
                              levels=levels(dat$cov)),
                   x=c(b_plain, b_m4),

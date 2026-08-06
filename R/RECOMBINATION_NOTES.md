@@ -26,9 +26,11 @@ Their stacked specification was recovered from `stacked_fatal.csv` and
   entropy-balancing weights and event-study plots; it does **not** trim the
   regression. The pooled and cohort regressions run on all outcome-available
   rows (2000–2020). We replicate that (no ±4 trim).
-- **Fixed effects = `agency.id + year.cohort`** — a shared unit FE (not
-  stack-specific `agency.id × cohort`) plus a stack-specific time FE. Replicated
-  as-is.
+- **Fixed effects.** The paper's m3/m4 use `agency.id + year.cohort` — a
+  *shared* agency FE (not stack-specific) plus a stack-specific time FE
+  (`year.cohort` = year×cohort). Our decomposition instead uses the
+  **leakage-free** `agency_stack (= agency.id × cohort) + year.cohort` FE — see
+  the FE-correction section below.
 
 ## Recombination results
 
@@ -93,19 +95,78 @@ headline (−0.0908, which is the *covariate-adjusted, entropy-weighted* spec).
 That is a coincidence; the plain-TWFE pooled coefficient the FWL weights target
 is −0.1044.
 
-## Identified stacks
+## Fixed-effects correction (leakage-free `agency × stack` unit FE)
 
-Cohorts with clean controls cluster near β ≈ −0.11 (dropping a requirement
-raises fatal-encounter probability); cohort **2009** dominates (weight 0.37, 8
-treated agencies). Two structural atoms, both faithful to their code:
+The paper's stacked FE `agency.id + year.cohort` pools each agency's fixed effect
+across every stack it appears in. Agency reuse is pervasive — of 776 agencies,
+**743 (95.7%) appear in >1 stack**, driven entirely by the 741 never-treated
+controls (each in 11 stacks); treated units appear in 1 (the 2 reversibles in 2).
+The correct stacked spec interacts the unit FE with the stack:
+`agency_stack (= agency.id × cohort) + year.cohort`. `fe_diagnostic.R` quantifies
+the effect on the P&P full panel:
+
+| spec | shared `agency.id` | interacted `agency×stack` | Δ |
+|---|---|---|---|
+| m3 (covariates) | −0.1026 | −0.0971 | +0.0055 |
+| plain (no cov) | −0.1044 | −0.0989 | +0.0055 |
+| m4 (cov+weights, Table 3) | −0.0908 | −0.0891 | +0.0017 |
+
+**The pooled ATT barely moves** (~0.005 / ~0.002, well within the SE ≈ 0.038) —
+a non-issue for the paper's headline, smaller than the recombination gap (0.014)
+and far smaller than the window sensitivity (~0.06). But the **per-cohort effects
+are artificially homogenized** under the shared FE: every stack comes out ≈ −0.11.
+Under the correct interacted FE they reveal their true heterogeneity (+0.02 to
+−0.37); it averages out in the pooled estimate because cohort 2009 (weight 0.37)
+is stable. `run_extraction.R` therefore uses the interacted FE for the
+decomposition, and the atom/cohort figures reflect that leakage-free spec (pooled
+stacked = −0.0989).
+
+## Identified stacks (under the leakage-free `agency × stack` FE)
+
+Cohort **2009** dominates the weight (0.37, 8 treated agencies) at β ≈ −0.12; the
+other cohorts are genuinely heterogeneous once the FE leakage is removed (e.g.
+2018 ≈ −0.29, 2014 ≈ −0.22, 2012 ≈ +0.02). Two structural atoms:
 
 - **2002** (weight 0.059, β = +0.007) is identified *without clean controls* —
   purely off a dropper-vs-adopter contrast within the stack. A genuinely
-  different kind of atom; it pulls the pooled estimate toward zero.
-- **2016** carries ≈0 weight (negligible residualized-treatment variance).
+  different kind of atom; it pulls the pooled estimate toward zero. (Its estimate
+  is unchanged by the FE correction, since it has no controls to leak across.)
+- **2016** now drops out under the interacted FE: its only treated unit is the
+  reversible portsmouth agency, which is collinear within its own stack once the
+  unit FE is stack-specific. (Under the shared FE it carried ≈0 weight anyway.)
 
 Cohorts 2000, 2001, 2003 drop out entirely (NA/NaN coefficient: no clean
 controls and no within-stack treatment contrast).
+
+## Reconstructing the stacked dataset from first principles
+
+We do not have the authors' stack-construction code, so `reconstruct_stacked.R`
+rebuilds `stacked_fatal.csv` from `dta.csv` to test how well the rule is
+recovered. It matches **exactly**: same 278,324 rows, same cohorts, identical
+row-set, and zero mismatches on `treat`, `no.req`, `any.fatalities`,
+`scaled.year`, and `year.cohort`.
+
+The recovered construction rule:
+- Stacks are indexed by treatment cohort `g` (a policy CHANGE year); cohorts
+  with `g >= 2000` are kept (the outcome is only observed from 2000).
+- Treated rows of stack `g` = the `dta` rows with `year.changed == g`. Because
+  `year.changed` is stored row-wise, the two reversible agencies (memphis,
+  portsmouth) are split at their change point automatically — the pre-change
+  segment goes to the adopt-cohort, the post-change segment to the drop-cohort
+  (reproducing the 22/12 and 29/5 partial panels).
+- Clean controls = the 741 never-changing agencies, full panels, attached only
+  when `g - 4 >= 2000` (=> cohorts 2004–2020).
+
+**The "implicit window" is ±4 (4 pre, 4 post), but it does NOT trim rows.** Every
+unit keeps its full 1987–2020 panel; the window only (a) gates control
+eligibility (a cohort needs 4 observable pre-periods) and (b) defines
+`scaled.year` and the entropy-balancing sample. A literal ±4-windowed rebuild
+(9 rows/unit) would therefore NOT match — the provided file is full-panel.
+
+The single component `reconstruct_stacked.R` cannot reproduce is the `weights`
+column: treated weights are 1, but the control weights are entropy-balancing
+(`ebal`) weights that require the authors' balancing specification (covariates,
+moments, normalization — they sum to ~70 per cohort).
 
 ## CS/SA note
 

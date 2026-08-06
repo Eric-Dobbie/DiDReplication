@@ -41,13 +41,13 @@ agg <- left_join(agg, pooled, by = "estimator") %>%
 hull <- agg[chull(agg$x, agg$y), c("x", "y")]
 
 # cohort labels for the influential / pivot stacked atoms:
-#   - high FWL weight (the cohorts pulling the stacked aggregate), or
-#   - a sign-flipping pivot (positive estimate = the no-clean-controls atom)
-stk_col <- atoms %>%                       # high-weight column (negative estimate)
-  filter(estimator == "stacked" & weight > 0.06 & estimate < 0) %>%
+#   - high FWL weight (the cohorts pulling the stacked aggregate), and
+#   - cohort 2002, the one identified with NO clean controls (dropper-vs-adopter)
+stk_col <- atoms %>%                       # highest-weight cohorts
+  filter(estimator == "stacked" & weight > 0.06 & group != 2002) %>%
   mutate(cohort = as.integer(group))
-stk_piv <- atoms %>%                       # sign-flipping pivot (positive estimate)
-  filter(estimator == "stacked" & estimate > 0) %>%
+stk_piv <- atoms %>%                       # the no-clean-controls cohort
+  filter(estimator == "stacked" & group == 2002) %>%
   mutate(cohort = sprintf("%d (no clean\ncontrols)", as.integer(group)))
 
 # aggregate labels anchored in the open right/upper area; the left side is
@@ -68,13 +68,12 @@ p <- ggplot() +
   # aggregate markers
   geom_point(data = agg, aes(x = x, y = y, fill = estimator),
              shape = 23, size = 5.4, color = "black", stroke = 0.8) +
-  # cohort labels: high-weight column, pushed left
+  # cohort labels: highest-weight stacked cohorts
   geom_text_repel(data = stk_col,
                   aes(x = estimate, y = weight, label = cohort),
                   color = pal["stacked"], size = 3.0, fontface = "bold",
-                  nudge_x = -0.30 - stk_col$estimate, direction = "y", hjust = 1,
                   segment.color = pal["stacked"], segment.size = 0.25,
-                  min.segment.length = 0, box.padding = 0.2,
+                  min.segment.length = 0, box.padding = 0.4,
                   seed = 7, show.legend = FALSE) +
   # cohort label: the 2002 pivot, pushed right
   geom_text_repel(data = stk_piv,

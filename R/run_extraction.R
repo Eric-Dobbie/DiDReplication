@@ -90,17 +90,26 @@ sa <- extract_sa_atoms(d_sa, yname = Y, idname = UNITN, tname = TIME,
 # =============================================================================
 # Step 4 -- Stacked atoms  (their pre-built clean-control stack)
 # =============================================================================
-stacked <- read.csv(file.path(DATA_DIR, "stacked_fatal.csv"))
+stacked <- read.csv(file.path(DATA_DIR, "stacked_fatal.csv"))   # P&P full panel = reconstruct_stacked.R output
 cat("== stacked_fatal.csv ==  rows:", nrow(stacked),
     " stacks:", length(unique(stacked[[S_STACK]])), "\n")
 
-st <- extract_stacked_atoms(stacked, yname = Y, idname = UNIT,
+# LEAKAGE-FREE (correct) stacked FE: interact the unit FE with the stack, so a
+# control agency (which appears in 11 stacks) is demeaned separately within each
+# stack -- the fully-interacted Cengiz FE (agency x stack + year x cohort). The
+# paper's m3/m4 instead use a shared agency.id FE, which leaks levels across
+# stacks and artificially homogenizes the per-cohort effects (see fe_diagnostic.R
+# and RECOMBINATION_NOTES.md). Clustering stays on the real agency.id.
+STACKUNIT <- "agency_stack"
+stacked[[STACKUNIT]] <- paste(stacked[[UNIT]], stacked[[S_STACK]], sep = "__")
+
+st <- extract_stacked_atoms(stacked, yname = Y, idname = STACKUNIT,
                             stacktime = S_TIME, stackid = S_STACK,
                             treatname = S_TREAT, cluster = UNIT,
                             resid_on = "estimation")
 
 # also compute the naive "residualize on all rows" version for the diagnostic
-st_naive <- extract_stacked_atoms(stacked, yname = Y, idname = UNIT,
+st_naive <- extract_stacked_atoms(stacked, yname = Y, idname = STACKUNIT,
                                   stacktime = S_TIME, stackid = S_STACK,
                                   treatname = S_TREAT, cluster = UNIT,
                                   resid_on = "all")
