@@ -1,0 +1,117 @@
+================ Stage V run.log ================ 
+timestamp: 2026-08-26 11:59:31 UTC 
+seed: set.seed(0) 
+DIDREP_DATA: /tmp/claude-0/-home-user-DiDReplication/9517d256-1fc8-5df7-85ce-36f389836d92/scratchpad/data 
+DIDREP_OUT : /home/user/DiDReplication/output 
+R version  : R version 4.3.3 (2024-02-29) 
+
+-- loading dta.csv -- 
+dta rows: 26758  unique agency.id: 787  years: 1987-2020 
+
+== change.type (agency-level) == 
+ct_ag
+        Adopted Adopted+Dropped         Dropped       No Change 
+              5               2              39             741  
+
+================ V1 ================ 
+741 No-Change agencies by no.req history: 
+
+always0 always1   mixed   allNA 
+     41     700       0       0  
+
+All 787 agencies by no.req history: 
+
+always0 always1   mixed   allNA 
+     41     700      46       0  
+
+Cross-tab (741 No Change): no.req history  x  gname recode 
+              part_gname_lab
+part_hist      gname:0 gname:1987
+  hist:always0      41          0
+  hist:always1       0        700 
+
+Partitions agree (always0<->gname0, always1<->gname1987)?  disagreements: 0 
+
+Cross-tab (all 787): no.req history  x  gname recode 
+              part_gname_all
+part_hist_all  gname:0 gname:1987 gname:cohort>=2000
+  hist:always0      41          0                  0
+  hist:always1       0        700                  0
+  hist:mixed         0          0                 46 
+
+V1 verdict: split is 41/700 ?  TRUE 
+
+================ V2 ================ 
+-- loading stacked_fatal.csv -- 
+stacked rows: 278324  cols: 59  stacks: 15 
+estimation-sample rows (non-missing any.fatalities): 171906 
+estimation rows by treat: 
+
+     0      1 
+171171    735  
+control agencies (unique agency.id): 741  with within-unit no.req variation: 0 
+control agency_stacks (unit x stack): 8151  with within-unit no.req variation: 0 
+always-no.req==1 control agencies: 700  of which vary no.req within unit: 0 (expect 0) 
+estimation rows from always-1 controls: 161700  (94.1% of estimation sample) 
+distinct year.cohort levels: 310  touched by always-1 controls: 231 
+
+================ V3 ================ 
+V3 sample rows: 15561  agencies: 741  always1: 700  always0: 41 
+
+Annual means (any.fatalities) by group: 
+ year mean_always0 mean_always1
+ 2000   0.21951220    0.2157143
+ 2001   0.21951220    0.2300000
+ 2002   0.21951220    0.2457143
+ 2003   0.07317073    0.2542857
+ 2004   0.36585366    0.2471429
+ 2005   0.17073171    0.2928571
+ 2006   0.14634146    0.3071429
+ 2007   0.17073171    0.3085714
+ 2008   0.24390244    0.2828571
+ 2009   0.31707317    0.3171429
+ 2010   0.31707317    0.2914286
+ 2011   0.26829268    0.3128571
+ 2012   0.34146341    0.3057143
+ 2013   0.31707317    0.3414286
+ 2014   0.34146341    0.3300000
+ 2015   0.29268293    0.3442857
+ 2016   0.31707317    0.3614286
+ 2017   0.26829268    0.3871429
+ 2018   0.24390244    0.3914286
+ 2019   0.31707317    0.3957143
+ 2020   0.21951220    0.3314286 
+
+always1 slope: 0.007686 (SE 0.000626), p=1.906e-34 
+always0 slope: 0.005353 (SE 0.002454), p=0.02945 
+equal-slope test (year:grpalways1): diff=0.002333 SE=0.002655 t=0.879 p=0.3796 
+fitted 2000->2020 change: always1=0.15373  always0=0.10706  diff=0.04667 
+
+================ V4 ================ 
+agencies recoded gname==1987 (CS already-treated, dropped from control pool): 700 
+distinct agencies appearing as stacked clean controls (treat==0): 741 
+agencies that are BOTH CS-already-treated AND stacked clean controls: 700 
+both-set == the 700 always-no.req==1 non-changers ? TRUE 
+
+Wrote: /home/user/DiDReplication/output/control_pool_verification.csv ( 44 rows ) 
+
+================ sessionInfo() ================ 
+R version 4.3.3 (2024-02-29)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 24.04.4 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.12.0 
+LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.12.0
+
+locale:
+[1] C
+
+time zone: Etc/UTC
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+[1] compiler_4.3.3 
