@@ -1,0 +1,13 @@
+"id","label","control_pool","n_controls","changed_dimension","estimate","se","ci_low","ci_high","n_obs","n_units","n_cohorts","source","supports_pp"
+"R0","P&P Table 3 m4: full-panel stack, shared FE, cov+ebal wts","741 No-Change",741,"reference (paper spec)",-0.0908090808214521,0.0043288708766928,-0.0992935118334943,-0.0823246498094099,171444,NA,NA,"output/cengiz_control_groups_summary.csv; assumptions.md §8,§14",TRUE
+"R1","R0 plain (no cov, no wts), shared agency FE","741 No-Change",741,"drop cov+wts",-0.104397217091685,0.0382690468295203,-0.179403170600222,-0.0293912635831485,171906,NA,NA,"output/cengiz_control_groups_summary.csv; assumptions.md §8",TRUE
+"R2","R1 with interacted agency×stack FE","741 No-Change",741,"interacted FE",-0.0989153732582026,0.0394406204025889,-0.176217568775193,-0.0216131777412127,171906,776,11,"output/recombination_check.csv (est); computed here (se,N)",TRUE
+"R3","Cengiz ±4, never-treated","741 No-Change",741,"windowed ±4",-0.0615125201022484,0.0692438762505653,-0.197228023703305,0.074202983498808,NA,NA,NA,"output/cengiz_control_groups_summary.csv",FALSE
+"R4","Cengiz ±4, not-yet-treated","741+not-yet",NA,"not-yet controls",-0.0616300138652742,0.0692119598826385,-0.197282962534677,0.0740229348041283,NA,NA,NA,"output/cengiz_control_groups_summary.csv",FALSE
+"R5","CS=SA never-treated (41), no cov, overall ATT","41 always-0",41,"CS estimator + 41 pool",0.0447650208209399,0.0650349988696777,-0.0827012346982316,0.172231276340111,NA,NA,13,"output/cs_variants_summary.csv (est); computed here",FALSE
+"R2h","Stacked interacted FE, harmonized 41-pool","41 always-0",41,"control pool 741→41",-0.0933494283707654,0.0363546369088819,-0.164603207383204,-0.0220956493583264,10206,76,11,"computed here",TRUE
+"R3h","Cengiz ±4, harmonized 41-pool","41 always-0",41,"control pool 741→41",-0.0987804878048781,0.0654879592929436,-0.227134529440073,0.0295735538303164,2340,55,6,"computed here",FALSE
+"R5d","CS FULL 741 pool [DIAGNOSTIC ONLY — false history]","741 (always-1 recoded g=0)",741,"CS + 741 pool",0.0302779697837464,0.0582622348804672,-0.0839139122407826,0.144469851808275,16527,NA,13,"computed here (DECOMPOSITION DEVICE, not a candidate spec)",FALSE
+"R5b_R2","CS-simple weights × R2 atoms (741 pool)","741 No-Change",741,"CS weights on stacked atoms",-0.061137764824988,NA,NA,NA,171906,NA,11,"computed here",FALSE
+"R5b_R2h","CS-simple weights × R2h atoms (41 pool)","41 always-0",41,"CS weights on stacked atoms",-0.0614766557140217,NA,NA,NA,10206,NA,11,"computed here",FALSE
+"R6","CS ATT(g)/ATT(e) disaggregated (41 pool)","41 always-0",41,"disaggregated targets",0.0447650208209399,0.0650349988696777,-0.0827012346982316,0.172231276340111,NA,NA,13,"computed here (see atoms_harmonized.csv; overall=R5)",FALSE
