@@ -68,7 +68,7 @@ lines <- c(
   "\\label{tab:stacked-loo}",
   "\\begin{tabular}{lrcc}",
   "\\toprule",
-  "Cohort dropped & Stacks & Plain & m4 (Table 3) \\\\",
+  "Cohort dropped & Cohorts & Plain & m4 (Table 3) \\\\",
   "\\midrule")
 for (i in seq_len(nrow(res))) {
   lab <- if (i == 1) "\\textit{None (full)}" else res$dropped[i]
