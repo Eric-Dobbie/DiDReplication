@@ -121,6 +121,11 @@ group, fixed-effects specification). The three estimators:
     the row-wise `year.changed == g` rule (§13).
   - **Cengiz windowed designs:** the two are **dropped entirely** (their two events
     are < 8 years apart, so their ±k windows overlap and would reuse rows).
+- **These two are a subset of a larger issue:** 6 of 37 treated stack-members are
+  *adopters* (`no.req` 1→0), not droppers, because stacks are keyed on the calendar
+  year of change, not its direction. See **§18** — the coding handles the sign
+  correctly (the regressor is the state `no.req`), but the adopters are load-bearing
+  for the clean-control-free early cohorts.
 
 ---
 
@@ -332,8 +337,8 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 ### `R/` scripts (all committed)
 | File | Purpose |
 |---|---|
-| `extract_atoms.R` | data-agnostic extractors `extract_cs_atoms`, `extract_sa_atoms`, `extract_stacked_atoms`, `fwl_stack_weights`, `build_stacks`. **Engine — embedded in §17.** |
-| `run_extraction.R` | driver: hardcodes P&P column names, recodes, runs the three extractors + recombination, writes `atoms_long.csv`, `recombination_check.csv`. **Embedded in §17.** |
+| `extract_atoms.R` | data-agnostic extractors `extract_cs_atoms`, `extract_sa_atoms`, `extract_stacked_atoms`, `fwl_stack_weights`, `build_stacks`. **Engine — embedded in §19.** |
+| `run_extraction.R` | driver: hardcodes P&P column names, recodes, runs the three extractors + recombination, writes `atoms_long.csv`, `recombination_check.csv`. **Embedded in §19.** |
 | `reconstruct_stacked.R` | rebuild `stacked_fatal.csv` from `dta.csv` and verify the exact match (§13). |
 | `fe_diagnostic.R` | Step 1–4 FE-spec diagnostic (§9). |
 | `cs_control_variants.R` | CS × {never/not-yet} × {no cov / paper cov}; coefficient plot. |
@@ -376,7 +381,142 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 
 ---
 
-## 17. Core code (embedded verbatim)
+## 17. Cohort 2002: present in the shipped stack, but clean-control-free (finding)
+
+Reviewer Step 1 asked whether a 2002 sub-experiment exists in `stacked_fatal.csv`
+at all, and whether the within-treated 2002 contrast we documented lives in the
+shipped stack or only in the reconstructed 15-cohort stack. Verified against the
+shipped data:
+
+- **Cohort 2002 IS in the shipped `stacked_fatal.csv`** — 170 rows, but **zero
+  clean controls**. Composition:
+
+  | rows | agencies | direction |
+  |---|---|---|
+  | treated | 4 — elgin IL, covington KY, canton OH, green bay WI | `no.req` 0→1 (dropped) |
+  | treated | 1 — revere MA | `no.req` 1→0 (adopted) |
+  | "No Change" controls | **0** | — |
+
+  This is the §4 boundary rule at work: 2002 needs `2002 − 4 = 1998 ≥ 2000` to
+  attach controls, which fails, so 2002 is treated-only in the shipped weighted
+  stack (as are 2000, 2001, 2003).
+
+- **The within-treated 2002 contrast lives in the SHIPPED stack, not just the
+  reconstruction.** Under the corrected agency×stack FE:
+
+  ```
+  2002 atom, full shipped stack (4 droppers + 1 adopter): +0.00658
+  2002 atom, adopter (revere) removed (4 droppers only):  NA — UNIDENTIFIED (collinear)
+  ```
+
+  With no clean controls, the 2002 stacked coefficient is identified *only* by the
+  opposing-direction contrast between the four droppers and the single reversing
+  adopter (revere MA, whose `no.req` moves 1→0 in the same window). Remove revere
+  and `no.req` becomes collinear with the agency×stack + year×cohort FE (all
+  survivors move the same way at the same time) → the coefficient is not
+  identified. **The entire shipped-stack 2002 estimate hinges on one reversing
+  unit.**
+
+- **CS's 2002 is a different object — do not conflate them.** CS identifies 2002
+  off the **41 never-treated clean controls** on the full panel: mean ATT(2002,·) =
+  **+0.222**, high CS weight, and it is the atom whose removal **flips CS's overall
+  sign** (see the CS leave-one-out). So the sharpest statement of the cross-estimator
+  contrast is: *2002 is present and clean-control-identified in CS (high-weight,
+  sign-flipping), but the shipped stacked 2002 has no clean controls at all and
+  survives only through the fragile within-treated dropper-vs-adopter contrast.*
+
+  | | shipped **stacked** 2002 | **CS** 2002 |
+  |---|---|---|
+  | identified off | 4 droppers vs 1 adopter (within-treated) | 41 never-treated clean controls |
+  | estimate | +0.007 | +0.222 |
+  | depends on | revere (collinear without it) | clean controls |
+  | pooled-sign role | negligible | sign-flipping |
+
+- **The reconstructed 15-cohort *unweighted* stack is the contrast case:** there
+  2002 *would* attach the 741 "No Change" controls (that build applies controls to
+  all cohorts, not only `g−4 ≥ 2000`; §13–14, and Table A.5 col. 3 = 233,520 rows),
+  giving 2002 a clean-control identification the shipped weighted stack denies it.
+  This is why the shipped weighted stack (11 control-bearing cohorts, 171,444 N) and
+  the reconstructed unweighted stack (15 cohorts, 233,520 N) treat 2002 differently.
+
+Verification was done with scratch scripts against `DIDREP_DATA` (not committed,
+per the "work from a copy" instruction); the facts above are the record.
+
+---
+
+## 18. Directional coding: adopters coded inside "drop" stacks (finding)
+
+Reviewer Step 2 asked whether a reversal is being coded as an adoption inside a
+stack (a bug) or whether the coding handles it (a sentence). **Both are true — the
+sign is handled correctly, but the structure it exposes is load-bearing.**
+
+**Fact.** Stacks are keyed on `year.changed` (the *calendar year* of the policy
+change), not on its direction. So a unit lands in cohort `g` whether it dropped or
+adopted a requirement in year `g`. Of the **37 treated stack-members**, **6 are
+adopters** (`change.type == "Adopted"`, `no.req` moving **1→0**, the opposite of the
+canonical "requirement dropped" 0→1 event):
+
+| agency | cohort | within-stack `no.req` |
+|---|---|---|
+| revere massachusetts | 2002 | 1→0 (adopt) |
+| portsmouth new hampshire | 2003 | 1→0 (adopt) |
+| memphis tennessee | 2004 | 1→0 (adopt) |
+| fall river massachusetts | 2012 | 1→0 (adopt) |
+| ramapo new york | 2018 | 1→0 (adopt) |
+| springfield massachusetts | 2018 | 1→0 (adopt) |
+
+Plus **2 "absorbed"** members whose reversal falls exactly on a segment boundary so
+they carry no within-stack variation (memphis 2009, portsmouth 2016 — their `no.req`
+is constant within the second segment). The other 29 treated members are droppers
+(0→1).
+
+**The coding handles the sign (the sentence).** The regressor is **`no.req` — the
+residency-requirement STATE** (1 = no requirement), *not* a directional treated×post
+dummy. An adopter (1→0) and a dropper (0→1) therefore identify the *same* object —
+the effect of the no-requirement state — symmetrically; no reversal is mis-signed.
+Had the spec used a directional "post" dummy (treated-post = 1 regardless of
+direction), the 6 adopters would be mis-coded: their requirement-ON post-period would
+carry the same 1 as a dropper's requirement-OFF post-period, conflating opposite
+states. It does not — `treat` is only a constant membership flag (absorbed by the
+agency×stack FE); all identification runs through `no.req`. So the pooled sign and
+magnitude are not mechanically distorted by the adopters.
+
+**But the structure is load-bearing (the finding).** Under the corrected
+agency×stack FE, identification of a control-free early cohort depends entirely on
+whether it contains a *wrong-direction* member. Among the four cohorts with **no
+clean controls** (`g − 4 < 2000`: 2000, 2001, 2002, 2003):
+
+| cohort | composition | identified? | atom |
+|---|---|---|---|
+| 2000 | 5 droppers, no adopter | **dropped (NaN)** | — |
+| 2001 | 1 dropper | **dropped (NaN)** | — |
+| **2002** | **4 droppers + 1 adopter (revere)** | **YES** | +0.007 |
+| 2003 | 1 adopter only (portsmouth) | **dropped (NaN)** | — |
+
+2000/2001 collapse because every treated unit switches `no.req` in the same
+direction in the same year → collinear with the year×cohort FE. 2003 collapses
+because a single unit has no within-stack contrast. **2002 survives *only* because
+the adopter revere moves `no.req` the opposite way to its four droppers**, breaking
+the collinearity — exactly the Step-1 result (remove revere → 2002 becomes NaN).
+This is why 2002 is the one control-free early cohort that enters the 11-atom
+decomposition at all (§9), and why its estimate rests on a single reverse-direction
+unit.
+
+Adopters with clean controls (2012 = fall river only; 2018 = 1 dropper + 2 adopters;
+2004 = 1 dropper + 1 adopter) are identified against the 741 controls, so their
+survival does not hinge on the adopter — but their treated variation is still a mix
+of drop and adopt transitions of `no.req`.
+
+**Bottom line.** No reversal is mechanically mis-coded (the state-variable spec is
+correct), but the "Requirement Dropped" label is imprecise for 6 of 37 treated
+members, and for the clean-control-free cohorts the adopters are not a nuisance —
+they are the *sole* source of identification (2002) or the reason a cohort would
+otherwise vanish. The Cengiz windowed designs sidestep this entirely by dropping the
+two multiply-reversing units (§5, §11); the shipped full-panel stack keeps them.
+
+---
+
+## 19. Core code (embedded verbatim)
 
 The full analytical engine. Everything else is in `R/` (§15).
 
