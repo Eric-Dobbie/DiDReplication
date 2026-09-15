@@ -337,8 +337,8 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 ### `R/` scripts (all committed)
 | File | Purpose |
 |---|---|
-| `extract_atoms.R` | data-agnostic extractors `extract_cs_atoms`, `extract_sa_atoms`, `extract_stacked_atoms`, `fwl_stack_weights`, `build_stacks`. **Engine — embedded in §20.** |
-| `run_extraction.R` | driver: hardcodes P&P column names, recodes, runs the three extractors + recombination, writes `atoms_long.csv`, `recombination_check.csv`. **Embedded in §20.** |
+| `extract_atoms.R` | data-agnostic extractors `extract_cs_atoms`, `extract_sa_atoms`, `extract_stacked_atoms`, `fwl_stack_weights`, `build_stacks`. **Engine — embedded in §21.** |
+| `run_extraction.R` | driver: hardcodes P&P column names, recodes, runs the three extractors + recombination, writes `atoms_long.csv`, `recombination_check.csv`. **Embedded in §21.** |
 | `reconstruct_stacked.R` | rebuild `stacked_fatal.csv` from `dta.csv` and verify the exact match (§13). |
 | `fe_diagnostic.R` | Step 1–4 FE-spec diagnostic (§9). |
 | `cs_control_variants.R` | CS × {never/not-yet} × {no cov / paper cov}; coefficient plot. |
@@ -350,6 +350,7 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `harmonize_atoms.R` | put CS/SA/stacked atoms on a common event-time grid → `atoms_harmonized.csv` (§19). |
 | `stacked_pretrends.R` | per-sub-experiment pre-trend joint Wald tests, both stacks, corrected FE (§19). |
 | `stacked_loo_both.R` | leave-one-cohort-out on both stacks (shipped m4, reconstructed m3), corrected FE (§19). |
+| `fwl_decomp.R` | FWL variance-share decomposition of the R2 spec; identity checks unweighted/weighted, additive-FE contrast (§20). |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
 | `plot_weight_vs_beta_facets.R` | small-multiples, per-estimator free weight axis. |
@@ -363,7 +364,7 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `cengiz_notyet_atoms.csv`, `cengiz_control_groups_summary.csv`,
 `cengiz_window_sensitivity.csv`, `stacked_dimensionality.{csv,tex}`,
 `stacked_loo.{csv,tex}`, `atoms_harmonized.csv`, `stacked_pretrends.{csv,tex}`,
-`stacked_loo_both.{csv,tex}`.
+`stacked_loo_both.{csv,tex}`, `fwl_decomp_{unweighted,weighted,summary}.csv`.
 
 ### `figures/`
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
@@ -601,7 +602,70 @@ reconstructed-15 stack** (ebal weights not reconstructible).
 
 ---
 
-## 20. Core code (embedded verbatim)
+## 20. FWL variance-share decomposition of the R2 spec (`fwl_decomp.R`)
+
+Explicit-regression verification of the TWFE identity `pooled_beta = Σ_s w_s·β_s`
+for the R2 stacked spec (**unit-by-stack = agency×cohort** + **time-by-stack =
+year.cohort** FE). `v_hat` = residual of `no.req` partialled on both stack-
+interacted FE sets by explicit regression (the stacks are unbalanced, so the
+two-way demeaning closed form does not apply); `V_s = Σ_i v_hat_i²` within stack;
+`w_s = V_s/ΣV_s`; `β_s` = per-stack regression of the outcome on `no.req` with
+unit + time FE. Estimation sample = observed-outcome rows (**171,906**), the sample
+the pooled beta is fit on. Reports faithfully — discrepancies flagged, not fixed.
+
+- **Step 2 (within-stack mean of `v_hat`):** max abs = **3.6e-17** unweighted,
+  **1.9e-16** weighted (both effectively zero).
+- **Step 3 — `V_s = 0` stacks (no within-stack residual variation ⇒ β_s
+  undefined, weight 0):** **2000, 2001, 2003, 2016** (unweighted). These are the
+  cohorts where all treated units switch `no.req` in the same direction at the same
+  time (collinear with the time-by-stack FE); 2002 survives (V_s = 5.79) despite
+  having no controls because its adopter moves `no.req` the opposite way (§17–18).
+  The high-weight stack is **2009 (w = 0.369)**; 2013 (0.153) and 2017 (0.100) next.
+- **Steps 5–6 — identity holds to machine precision (unweighted):**
+  ```
+  pooled beta  = -9.891537325820261e-02
+  Σ_s w_s·β_s  = -9.891537325820207e-02
+  difference   =  5.41e-16
+  ```
+  Exact because both FE dimensions are stack-interacted ⇒ the pooled normal
+  equations are block-diagonal across stacks up to the shared `no.req` coefficient.
+- **Step 7 — weighted (entropy-balancing) identity also holds to machine
+  precision:**
+  ```
+  pooled beta  = -1.083934962396384e-01
+  Σ_s w_s·β_s  = -1.083934962396388e-01
+  difference   = -4.16e-16
+  ```
+  Weighting reshuffles the pieces (2009's weight 0.369→0.170; 2018's 0.080→0.149;
+  treated shares rise) but the decomposition stays exact.
+  **Discrepancy (reported, not fixed):** weighted stack **2016** has V_s = 7.55e-44
+  (numerically nonzero vs the exact 0 it takes unweighted) and a garbage
+  β_s = −193.98 (near-collinear `no.req` over a ~0 residual) instead of the `NA` the
+  unweighted per-stack fit returns; its weight is ~1.6e-45 so the contribution
+  (~−3e-43) leaves the identity intact. A floating-point collinearity-handling
+  artifact that differs between the weighted and unweighted per-stack fits.
+- **Step 8 — additive (non-interacted) unit FE + time-by-stack FE: identity FAILS
+  by +5.48e-03 (≈5.5%), as expected:**
+  ```
+  pooled beta (agency.id additive) = -1.043972170916846e-01
+  Σ_s w_s·β_s (from R2 decomp)      = -9.891537325820207e-02
+  difference                        =  5.481843833482533e-03
+  ```
+  With additive unit FE the design is no longer block-diagonal: the **743 of 776**
+  agencies that appear in >1 stack (all 741 never-changing controls + the 2
+  reversibles) tie the stacks through a shared intercept, so the pooled coefficient
+  is not the variance-weighted average of the within-stack β_s. Same FE-leakage gap
+  as §9 (−0.10440 additive vs −0.09892 interacted).
+- **Aside — sample choice:** residualizing `v_hat` over **all** 278,324 rows
+  (including pre-2000 missing-outcome rows) then summing over observed-outcome rows
+  gives Σ w_s'·β_s = −9.051e-02, off the pooled by **8.40e-03 (≈8.5%)** — the §10
+  gap; the estimation sample is the correct one.
+
+Outputs: `output/fwl_decomp_{unweighted,weighted,summary}.csv`.
+
+---
+
+## 21. Core code (embedded verbatim)
 
 The full analytical engine. Everything else is in `R/` (§15).
 
