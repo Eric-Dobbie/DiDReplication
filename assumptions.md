@@ -337,8 +337,8 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 ### `R/` scripts (all committed)
 | File | Purpose |
 |---|---|
-| `extract_atoms.R` | data-agnostic extractors `extract_cs_atoms`, `extract_sa_atoms`, `extract_stacked_atoms`, `fwl_stack_weights`, `build_stacks`. **Engine — embedded in §19.** |
-| `run_extraction.R` | driver: hardcodes P&P column names, recodes, runs the three extractors + recombination, writes `atoms_long.csv`, `recombination_check.csv`. **Embedded in §19.** |
+| `extract_atoms.R` | data-agnostic extractors `extract_cs_atoms`, `extract_sa_atoms`, `extract_stacked_atoms`, `fwl_stack_weights`, `build_stacks`. **Engine — embedded in §20.** |
+| `run_extraction.R` | driver: hardcodes P&P column names, recodes, runs the three extractors + recombination, writes `atoms_long.csv`, `recombination_check.csv`. **Embedded in §20.** |
 | `reconstruct_stacked.R` | rebuild `stacked_fatal.csv` from `dta.csv` and verify the exact match (§13). |
 | `fe_diagnostic.R` | Step 1–4 FE-spec diagnostic (§9). |
 | `cs_control_variants.R` | CS × {never/not-yet} × {no cov / paper cov}; coefficient plot. |
@@ -346,6 +346,10 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `cengiz_notyet.R` | Cengiz ±4 with not-yet-treated controls. |
 | `cengiz_window_sensitivity.R` | Cengiz coefficient vs window k = 2..10. |
 | `stacked_dimensionality.R` | row counts by control group × window → `.tex`. |
+| `stacked_loo.R` | leave-one-cohort-out on the shipped stack (plain + m4), corrected FE (§9). |
+| `harmonize_atoms.R` | put CS/SA/stacked atoms on a common event-time grid → `atoms_harmonized.csv` (§19). |
+| `stacked_pretrends.R` | per-sub-experiment pre-trend joint Wald tests, both stacks, corrected FE (§19). |
+| `stacked_loo_both.R` | leave-one-cohort-out on both stacks (shipped m4, reconstructed m3), corrected FE (§19). |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
 | `plot_weight_vs_beta_facets.R` | small-multiples, per-estimator free weight axis. |
@@ -357,7 +361,9 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `atoms_long.csv` (531 atoms: CS 260, SA 260, stacked 11), `recombination_check.csv`,
 `cs_variants_{summary,atoms}.csv`, `cengiz_stacked_{atoms,summary}.csv`,
 `cengiz_notyet_atoms.csv`, `cengiz_control_groups_summary.csv`,
-`cengiz_window_sensitivity.csv`, `stacked_dimensionality.{csv,tex}`.
+`cengiz_window_sensitivity.csv`, `stacked_dimensionality.{csv,tex}`,
+`stacked_loo.{csv,tex}`, `atoms_harmonized.csv`, `stacked_pretrends.{csv,tex}`,
+`stacked_loo_both.{csv,tex}`.
 
 ### `figures/`
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
@@ -516,7 +522,86 @@ two multiply-reversing units (§5, §11); the shipped full-panel stack keeps the
 
 ---
 
-## 19. Core code (embedded verbatim)
+## 19. Pre-trends and leave-one-out (findings)
+
+Reviewer Step 3: harmonize the atoms onto a common event-time grid, run
+per-sub-experiment pre-trend tests, and leave-one-cohort-out on both stacks.
+
+### 19.1 Harmonized atoms (`harmonize_atoms.R` → `atoms_harmonized.csv`)
+
+One row per `(estimator, cohort, event_time, estimate, se, is_pre, identified)`:
+- **CS**: `ATT(g,t)`, `event_time = t − g` (t<g rows are the placebo pre-periods).
+- **SA**: `CATT(g,e)`, `event_time = e`.
+- **stacked**: per-cohort event study under the corrected interactive FE,
+  reference `e = −1`, restricted to the **±4** balancing window. CS/SA rows span
+  their full event-time range; the stacked rows are ±4 (the design's own window),
+  so restrict CS/SA to ±4 before a like-for-like comparison. The CS/SA SEs here are
+  **marginal** — a joint pre-trend test needs the full covariance and is computed
+  by refitting (§19.2), not read off this file.
+
+### 19.2 Per-sub-experiment pre-trend tests (`stacked_pretrends.R`)
+
+For each cohort's sub-experiment, an event study `any.fatalities ~ i(etime, treat,
+ref=−1) | agency.id + year` on the ±4 window (within one stack the interacted FE
+reduce to agency + year), then a **joint Wald test of the pre-treatment leads**
+`{e<0, e≠−1}=0`. Primary inference clusters on `agency.id`; a **hetero-robust**
+p-value is reported alongside because these cohorts have **few treated clusters
+(often 1–3)**, where cluster-robust inference degenerates and inflates the Wald
+statistic.
+
+A cohort is **testable only with clean controls AND an observed treated lead:**
+- **Control-free early cohorts (2000–2003) in the shipped stack are UNTESTABLE** —
+  no clean controls ⇒ the `treat×etime` leads are collinear. So the shipped stack's
+  early cohorts have not only a fragile point estimate (§17–18) but an **untestable
+  parallel-trends assumption**. Attaching controls (reconstructed-15) makes 2002 and
+  2003 testable (2002 borderline, cluster/hetero p ≈ 0.06 on its single lead; 2003
+  p ≈ 0.30).
+- **2000, 2001, 2016 are untestable even with controls** — no observed treated
+  pre-period (2000's treatment = the first outcome year; 2001 observes only `e=−1`;
+  2016's treated unit, portsmouth, is only observed post).
+
+**Results (control-bearing cohorts, ±4):** pre-trends are consistent with parallel
+trends for **2004, 2008 (marginal, p≈0.058), 2009, 2012, 2013, 2014, 2020**. Two
+late cohorts reject:
+- **2019** (1 treated unit): lead coefficients ≈ **+1.0 on a binary outcome** — a
+  single always-fatal agency; rejects under **both** cluster and hetero SEs. Genuine.
+- **2017** (3 treated units): cluster p≈0 is a few-cluster artifact (lead SE 0.02),
+  but hetero p≈0.007 with leads ≈ +0.7–1.0 — a real violation.
+- **2018** (3 treated units): cluster p=0.045 but **hetero p=0.17** — the rejection
+  is a few-cluster artifact; not a robust violation.
+
+**Takeaway:** the well-populated cohorts pass; the failures are concentrated in
+single-/few-treated-unit late cohorts dominated by one large agency, and the extreme
+Wald magnitudes overstate them (few-cluster inference). The substantive caveat is
+that the shipped stack cannot test pre-trends at all for its control-free early
+cohorts — exactly the cohorts whose estimates are most fragile.
+
+### 19.3 Leave-one-cohort-out, both stacks (`stacked_loo_both.R`)
+
+Corrected FE; drop each cohort's whole sub-experiment and refit. `plain` (no
+controls/weights) is the apples-to-apples target; the covariate column is **m4
+(weighted, Table 3) on the shipped stack** and **m3 (covariates, unweighted) on the
+reconstructed-15 stack** (ebal weights not reconstructible).
+
+- **No single cohort flips the stacked sign** on either stack — plain stays in
+  **[−0.115, −0.077]** (shipped) / **[−0.107, −0.077]** (reconstructed). The stacked
+  negative estimate is **robust** to leave-one-out. *(Contrast: CS's positive overall
+  hinges on the single clean-control 2002 atom — dropping 2002 flips CS's sign. The
+  stacked estimate has no such single point of failure.)*
+- **Dropping 2000/2001/2003/2016 moves the shipped plain coef by exactly 0** —
+  direct confirmation they are unidentified and contribute nothing (§17–18).
+- **2018 is the most influential single cohort:** shipped plain Δ=+0.017, and under
+  **m4 dropping 2018 nearly halves the effect (−0.089 → −0.044, Δ=+0.045)** — the
+  same cohort whose pre-trend rejection was a few-cluster artifact (a thin,
+  influential late cohort). **2013** pulls the other way (Δ=−0.016/−0.014). **2009**
+  (the high-weight cohort) shifts plain by +0.011.
+- The reconstructed-15 baseline (plain −0.093, m3 −0.092) is close to the shipped
+  −0.099, and its LOO pattern matches — attaching controls to the early cohorts
+  barely moves the pooled estimate but makes 2002/2003 identified and testable.
+
+---
+
+## 20. Core code (embedded verbatim)
 
 The full analytical engine. Everything else is in `R/` (§15).
 
