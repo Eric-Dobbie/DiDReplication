@@ -1,0 +1,4 @@
+"scenario","cs_overall","sa_overall","agg_abs_diff","cell_max_abs_diff","equivalence_expected"
+"baseline_balanced_nevertreated",0.251166054630567,0.251166054630394,1.72861724934137e-13,5.35238520171788e-13,"YES"
+"unbalanced_nevertreated",0.116814668389577,0.259512540173748,0.142697871784172,NA,"no (unbalanced)"
+"balanced_notyettreated",0.249848242282341,0.251166054630394,0.00131781234805353,0.132038117169327,"no (diff control group)"

@@ -1,0 +1,8 @@
+"file","labels_rows","has_estimation_N","has_windowed_rowcount","collision"
+"control_pool_verification.csv",TRUE,TRUE,FALSE,FALSE
+"control_pool_verification.md",TRUE,TRUE,FALSE,FALSE
+"ladder.csv",FALSE,TRUE,FALSE,FALSE
+"ladder.md",TRUE,TRUE,FALSE,FALSE
+"n_reconciliation.csv",FALSE,TRUE,TRUE,FALSE
+"stacked_dimensionality.csv",TRUE,FALSE,TRUE,FALSE
+"stacked_dimensionality.tex",TRUE,FALSE,TRUE,FALSE

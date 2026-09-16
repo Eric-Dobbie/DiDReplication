@@ -1,0 +1,24 @@
+"quantity","value","expected","kind","is_estimation_N","matches_expected"
+"file_rows",278324,278324,"file_rows",FALSE,TRUE
+"outcome_observed_rows",171906,171906,"file_rows(outcome-observed)",FALSE,TRUE
+"control_rows(741x21x11)",171171,171171,"file_rows(control only)",FALSE,TRUE
+"treated_outcome_rows",735,735,"file_rows(treated)",FALSE,TRUE
+"felm_N_plain",171906,171906,"estimation_N",TRUE,TRUE
+"felm_N_covariate",171444,171444,"estimation_N",TRUE,TRUE
+"rows_dropped_missing_pctwhiteofficers",462,462,"dropped_rows",FALSE,TRUE
+"cengiz_window_rows[never-treated,k=2]",33470,33470,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[never-treated,k=3]",36428,36428,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[never-treated,k=4]",40140,40140,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[never-treated,k=5]",40898,40898,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[never-treated,k=6]",48334,48334,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[never-treated,k=7]",44640,44640,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[never-treated,k=8]",37944,37944,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[never-treated,k=9]",14212,14212,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[not-yet-treated,k=2]",33935,33935,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[not-yet-treated,k=3]",36897,36897,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[not-yet-treated,k=4]",40644,40644,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[not-yet-treated,k=5]",41173,41173,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[not-yet-treated,k=6]",48581,48581,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[not-yet-treated,k=7]",44895,44895,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[not-yet-treated,k=8]",38165,38165,"row_count_windowed",FALSE,TRUE
+"cengiz_window_rows[not-yet-treated,k=9]",14250,14250,"row_count_windowed",FALSE,TRUE

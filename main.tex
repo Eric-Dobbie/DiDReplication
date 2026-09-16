@@ -40,7 +40,7 @@
 \maketitle
 
 \begin{abstract}
-    \noindent In settings with staggered treatment adoption, two-way fixed effects estimators have been shown to produce biased estimates of the average treatment effect on the treated (ATT) when treatment effects are heterogeneous. A growing family of estimators addresses this problem, but applied researchers have little guidance for selecting an estimator among these options. I propose a robustness diagnostic test that leverages confidence intervals from multiple estimators to characterize the sensitivity of ATT estimates to estimator choice. I demonstrate the approach using an application to police residency requirements, a policy setting with canonical staggered adoption. The tool provides applied researchers with a transparent, interpretable summary of estimator sensitivity without requiring a commitment to any single identifying assumption.
+    \noindent In settings with staggered treatment adoption, two-way fixed effects estimators have been shown to produce biased estimates of the average treatment effect on the treated (ATT) when treatment effects are heterogeneous. A growing family of estimators addresses this problem, but applied researchers have little guidance for selecting an estimator among these options. Through a replication exercise of \textcite{payson2023resreq}, with an application to police residency requirements, a policy setting with canonical staggered adoption, I demonstrate best practices for researchers facing disagreement across estimators.
 \end{abstract}
 
 \newpage
@@ -103,21 +103,8 @@ The problem with the classic TWFE approach is so-called ``forbidden comparisons'
     \item The core idea: these estimators are all related and solve the same theoretical problem but can produce different estimates. There is no clear guidance on how to select or how important selecting the 'correct' estimator is
 \end{itemize}
 
-\section{Diagnosing Estimator Sensitivity}
 
-\begin{itemize}
-    \item Proposed robustness display: For each estimator, find the point estimate and the confidence interval at a selected level.
-    \item Display the union of these confidence intervals across all estimators at the selected level as a continuous band
-    \item The width of the band shows the sensitivity of the estimator to selection of estimators
-\end{itemize}
-
-\section{Simulation}
-  \subsection{When Estimates Are Robust}
-  \subsection{When Estimates Diverge}
-
-\section{Application}
-
-\subsection{\textcite{payson2023resreq} Replication}
+\section{\textcite{payson2023resreq} Replication}
 
 \textcite{payson2023resreq} present an analysis of police residency requirements. Residency requirements, as the name suggests, are a policy intervention whereby municipal employees are required to live inside or nearby the municipality in which they work. The logic behind residency requirements is that officers who interact with members of a community will be less likely to discriminate against them, and requiring officers to live in the community leads to forced contact with the discriminated against group, which could give them a sense of empathy for those in the community (\cite{pettigrew_recent_2011}, \cite{hopkins_politicized_2010}, \cite{hubert_social_2022}). The authors analyze the effect of removing a residency requirement on the probability of a fatal encounter with police officers. The empirical approach is a DiD approach with treatments assigned at the city level, using a two-way fixed effects (TWFE) estimator and a stacked regression to estimate the ATT. They find that removing a residency requirement significantly reduces the probability of a fatal encounter with police. This runs counter to prevailing theory, which predicts that residency requirements will improve policing performance through social contact and local knowledge (\cite{hubert_social_2022, pettigrew_recent_2011}. 
 
