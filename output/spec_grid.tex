@@ -1,0 +1,27 @@
+\begin{table}[t]\centering
+\caption{Specification grid for the stacked fatal-encounters regression on
+\texttt{stacked\_fatal.csv}: \texttt{no.req} on \texttt{any.fatalities} across
+fixed effects (additive \texttt{agency.id} vs \texttt{agency.id}$\times$\texttt{cohort},
+both with \texttt{year.cohort}), covariates (none vs P\&P's four controls), and
+weights (unweighted vs the native entropy-balancing column). SEs clustered on
+\texttt{agency.id}. P\&P Table columns 3 and 4 (both with controls) are
+$-0.103\,(0.039)$ and $-0.091\,(0.037)$; both reproduce in the additive-FE +
+controls row (col.\ 3 unweighted, col.\ 4 weighted), confirming the paper's
+shared \texttt{agency.id} FE rather than the leakage-free $\text{agency}\times
+\text{stack}$ FE.}
+\label{tab:spec-grid}
+\begin{tabular}{lllrrrl}
+\toprule
+Fixed effects & Covariates & Weights & Coef. & Cluster SE & $N$ & Matches \\
+\midrule
+additive $\text{agency}+\text{yr}\times\text{coh}$ & 4 P&P & unweighted & \textbf{-0.1026} & 0.0393 & 171,444 & \textbf{col 3} \\
+additive $\text{agency}+\text{yr}\times\text{coh}$ & 4 P&P & weighted & \textbf{-0.0908} & 0.0373 & 171,444 & \textbf{col 4} \\
+additive $\text{agency}+\text{yr}\times\text{coh}$ & none & unweighted & -0.1044 & 0.0391 & 171,906 &  \\
+additive $\text{agency}+\text{yr}\times\text{coh}$ & none & weighted & -0.1103 & 0.0391 & 171,906 &  \\
+$\text{agency}\times\text{coh}+\text{yr}\times\text{coh}$ & 4 P&P & unweighted & -0.0971 & 0.0400 & 171,444 &  \\
+$\text{agency}\times\text{coh}+\text{yr}\times\text{coh}$ & 4 P&P & weighted & -0.0891 & 0.0375 & 171,444 &  \\
+$\text{agency}\times\text{coh}+\text{yr}\times\text{coh}$ & none & unweighted & -0.0989 & 0.0398 & 171,906 &  \\
+$\text{agency}\times\text{coh}+\text{yr}\times\text{coh}$ & none & weighted & -0.1084 & 0.0394 & 171,906 &  \\
+\bottomrule
+\end{tabular}
+\end{table}

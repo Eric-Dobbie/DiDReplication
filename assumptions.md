@@ -236,6 +236,23 @@ Paper's `m3`/`m4` use **`agency.id + year.cohort`** FE (shared agency FE). The
 **Decision:** the decomposition (`run_extraction.R`) uses the **interacted FE**
 (pooled stacked = **−0.0989**). Rationale in §9.
 
+### Reproducing the paper's table (`spec_grid.R`, `output/spec_grid.{tex,csv}`)
+The published fatal-encounters table (paper p.25; `police_residency_main.R` m1–m4,
+covariates = **`log.pop + log.med.inc + pct.white + pct.white.officers.imputed`**)
+reports for "Requirement Dropped": col 1 −0.097 (0.037), col 2 −0.093 (0.036),
+**col 3 −0.103 (0.039)**, **col 4 −0.091 (0.037)**. Note **col 3's SE is 0.039, not
+0.037** (an earlier note/prompt had 0.037 — corrected here against the PDF). A
+2×2×2 grid (FE × covariates × weights, SE clustered on `agency.id`) reproduces both
+stacked columns **exactly** in the **additive-`agency.id` FE + 4-controls** row:
+- **col 3** = additive FE, 4 controls, **unweighted** → −0.1026 (0.0393), N 171,444.
+- **col 4** = same cell, **weighted** → −0.0908 (0.0373), N 171,444.
+
+Both require the **shared `agency.id` FE**; the leakage-free `agency×stack`
+counterparts are −0.0971 (0.0400) and −0.0891 (0.0375) — close but distinct
+(swapping FE moves col 3 by +0.005, col 4 by +0.002). No other cell matches either
+target. **Implementation note:** felm's weighted `$se` is the *non-clustered*
+analytic SE (~0.004); the clustered SE is `$cse` — `spec_grid.R` reports `$cse`.
+
 ---
 
 ## 9. The fixed-effects decision (leakage-free `agency × stack`)
@@ -380,6 +397,7 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `stack_composition.R` | per-stack treated (drop/adopt/absorbed) × control (never/always/not-yet) counts + identification source → `.tex` (§18). |
 | `stacked_nevertreated.R` | stacked regression on never-treated controls only (41) vs full pool (741), corrected FE (§6). |
 | `decomp_table.R` | LaTeX table of per-cohort β_s and weights w_s (unweighted + ebal-weighted) from the stacked decomposition → `.tex` (§10). |
+| `spec_grid.R` | 2×2×2 FE×covariate×weight grid reproducing the paper's stacked cols 3–4 → `.tex` (§8). |
 | `data_description.R` | descriptive panel summary (years, cities, cohorts, N) → `.tex`. |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
@@ -396,7 +414,7 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `stacked_loo.{csv,tex}`, `atoms_harmonized.csv`, `stacked_pretrends.{csv,tex}`,
 `stacked_loo_both.{csv,tex}`, `fwl_decomp_{unweighted,weighted,summary}.csv`,
 `stack_composition.{csv,tex}`, `data_description.{csv,tex}`,
-`stacked_nevertreated.csv`, `decomp_table.tex`.
+`stacked_nevertreated.csv`, `decomp_table.tex`, `spec_grid.{csv,tex}`.
 
 ### `figures/`
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
