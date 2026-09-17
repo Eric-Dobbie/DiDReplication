@@ -69,15 +69,11 @@ p <- ggplot(atoms, aes(x = estimate, y = weight, color = estimator)) +
   scale_color_manual(values = pal, guide = "none", aesthetics = c("color", "fill")) +
   scale_x_continuous(breaks = scales::pretty_breaks(9)) +
   labs(
-    title    = "Component estimate vs. aggregation weight, by estimator",
-    subtitle = "Outcome: P(fatal civilian encounter). Each panel has its own weight scale. CS and SA coincide exactly here\n(balanced panel), so their panels are identical. Vertical line + diamond = overall ATT; labels = highest-weight cohorts.",
     x = "Component estimate (effect on probability of a fatal encounter)",
     y = "Aggregation weight"
   ) +
-  theme_bw(base_size = 12) +
+  theme_minimal(base_size = 12) +
   theme(
-    plot.title      = element_text(face = "bold", size = 13),
-    plot.subtitle   = element_text(size = 8.7, color = "grey30"),
     strip.text      = element_text(face = "bold", size = 10.5),
     strip.background = element_rect(fill = "grey93"),
     panel.grid.minor = element_blank()

@@ -102,13 +102,9 @@ p <- ggplot(pd, aes(est, label, color=grp)) +
   geom_point(size=3.4) +
   geom_text(aes(label=sprintf("%+.3f", est)), vjust=-1, size=3, fontface="bold", show.legend=FALSE) +
   scale_color_manual(values=pal, name=NULL) +
-  labs(title="Stacked estimate: window and clean-control choice",
-       subtitle="Pooled coefficient on 'requirement dropped' (P(fatal encounter)), 95% CI. Cengiz = balanced +/-4 window, 9 rows/unit.",
-       x="Pooled stacked estimate", y=NULL) +
-  theme_bw(base_size=12) +
-  theme(plot.title=element_text(face="bold", size=13),
-        plot.subtitle=element_text(size=8.5, color="grey30"),
-        legend.position="top", panel.grid.minor=element_blank(),
+  labs(x="Pooled stacked estimate", y=NULL) +
+  theme_minimal(base_size=12) +
+  theme(legend.position="top", panel.grid.minor=element_blank(),
         axis.text.y=element_text(size=9.5))
 ggsave(file.path(FIG_DIR, "cengiz_control_groups.pdf"), p, width=9.5, height=4.6, device=cairo_pdf)
 ggsave(file.path(FIG_DIR, "cengiz_control_groups.png"), p, width=9.5, height=4.6, dpi=200)

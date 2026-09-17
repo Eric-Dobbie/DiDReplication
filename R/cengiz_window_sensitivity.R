@@ -77,13 +77,9 @@ p <- ggplot(rp, aes(k, estimate)) +
   geom_point(color="#CC79A7", size=3) +
   geom_text(aes(label=n_cohorts), vjust=-1.1, size=2.9, color="grey30") +
   scale_x_continuous(breaks=2:10) +
-  labs(title="Cengiz stacked coefficient vs. event-window half-width (+/-k)",
-       subtitle="Pooled effect on P(fatal encounter), 95% CI band. Number above each point = eligible cohorts.\nWider windows require more observed pre/post years, so fewer cohorts qualify (k>=9: only cohort 2009).",
-       x="Window half-width k (rows per unit = 2k+1)", y="Pooled stacked estimate") +
-  theme_bw(base_size=12) +
-  theme(plot.title=element_text(face="bold", size=12.5),
-        plot.subtitle=element_text(size=8.5, color="grey30"),
-        panel.grid.minor=element_blank())
+  labs(x="Window half-width k (rows per unit = 2k+1)", y="Pooled stacked estimate") +
+  theme_minimal(base_size=12) +
+  theme(panel.grid.minor=element_blank())
 ggsave(file.path(FIG_DIR, "cengiz_window_sensitivity.pdf"), p, width=9, height=5.5, device=cairo_pdf)
 ggsave(file.path(FIG_DIR, "cengiz_window_sensitivity.png"), p, width=9, height=5.5, dpi=200)
 cat("Wrote figures/cengiz_window_sensitivity.{pdf,png} and output/cengiz_window_sensitivity.csv\n")
