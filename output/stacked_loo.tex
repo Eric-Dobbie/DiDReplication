@@ -1,0 +1,32 @@
+\begin{table}[t]\centering
+\caption{Leave-one-cohort-out for the stacked regression with the corrected
+interactive fixed effects ($\text{agency}\times\text{stack} + \text{year}\times\text{cohort}$).
+Each row drops one treatment cohort's sub-experiment and refits the pooled
+coefficient on \texttt{no.req}; clustered SEs in parentheses. `Plain' has no
+controls (the decomposition target); `m4' adds the paper's four covariates and
+the entropy-balancing weights (Table 3).}
+\label{tab:stacked-loo}
+\begin{tabular}{lrcc}
+\toprule
+Cohort dropped & Cohorts & Plain & m4 (Table 3) \\
+\midrule
+\textit{None (full)} & 15 & -0.099 (0.039) & -0.089 (0.004) \\
+\midrule
+2000 & 14 & -0.099 (0.039) & -0.083 (0.004) \\
+2001 & 14 & -0.099 (0.039) & -0.089 (0.004) \\
+2002 & 14 & -0.106 (0.041) & -0.107 (0.005) \\
+2003 & 14 & -0.099 (0.039) & -0.089 (0.004) \\
+2004 & 14 & -0.103 (0.041) & -0.097 (0.005) \\
+2008 & 14 & -0.098 (0.040) & -0.089 (0.005) \\
+2009 & 14 & -0.088 (0.050) & -0.097 (0.004) \\
+2012 & 14 & -0.106 (0.041) & -0.095 (0.005) \\
+2013 & 14 & -0.115 (0.043) & -0.103 (0.005) \\
+2014 & 14 & -0.093 (0.040) & -0.083 (0.005) \\
+2016 & 14 & -0.099 (0.039) & -0.088 (0.005) \\
+2017 & 14 & -0.103 (0.042) & -0.097 (0.005) \\
+2018 & 14 & -0.082 (0.041) & -0.044 (0.005) \\
+2019 & 14 & -0.094 (0.040) & -0.079 (0.005) \\
+2020 & 14 & -0.100 (0.040) & -0.090 (0.005) \\
+\bottomrule
+\end{tabular}
+\end{table}

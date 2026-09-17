@@ -1,0 +1,55 @@
+\begin{table}[t]\centering
+\caption{Leave-one-cohort-out on the shipped stacked dataset, corrected interactive fixed effects. Each row drops one cohort's sub-experiment and refits \texttt{no.req}; clustered SEs in parentheses. Plain has no controls; m4 adds the paper's four covariates and the entropy-balancing weights (Table 3).}
+\label{tab:loo-shipped}
+\begin{tabular}{lrcc}
+\toprule
+Cohort dropped & Cohorts & Plain & m4 (Table 3) \\
+\midrule
+\textit{None (full)} & 15 & -0.099 (0.039) & -0.089 (0.004) \\
+\midrule
+2000 & 14 & -0.099 (0.039) & -0.083 (0.004) \\
+2001 & 14 & -0.099 (0.039) & -0.089 (0.004) \\
+2002 & 14 & -0.106 (0.041) & -0.107 (0.005) \\
+2003 & 14 & -0.099 (0.039) & -0.089 (0.004) \\
+2004 & 14 & -0.103 (0.041) & -0.097 (0.005) \\
+2008 & 14 & -0.098 (0.040) & -0.089 (0.005) \\
+2009 & 14 & -0.088 (0.050) & -0.097 (0.004) \\
+2012 & 14 & -0.106 (0.041) & -0.095 (0.005) \\
+2013 & 14 & -0.115 (0.043) & -0.103 (0.005) \\
+2014 & 14 & -0.093 (0.040) & -0.083 (0.005) \\
+2016 & 14 & -0.099 (0.039) & -0.088 (0.005) \\
+2017 & 14 & -0.103 (0.042) & -0.097 (0.005) \\
+2018 & 14 & -0.082 (0.041) & -0.044 (0.005) \\
+2019 & 14 & -0.094 (0.040) & -0.079 (0.005) \\
+2020 & 14 & -0.100 (0.040) & -0.090 (0.005) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]\centering
+\caption{Leave-one-cohort-out on the reconstructed 15-cohort stack (all change-cohorts $\ge 2000$ given the 741 clean controls). The entropy-balancing weights are not reconstructible, so the covariate column is m3 (covariates, unweighted). Same corrected fixed effects and clustering.}
+\label{tab:loo-recon15}
+\begin{tabular}{lrcc}
+\toprule
+Cohort dropped & Cohorts & Plain & m3 (cov, no wts) \\
+\midrule
+\textit{None (full)} & 15 & -0.093 (0.038) & -0.092 (0.038) \\
+\midrule
+2000 & 14 & -0.093 (0.038) & -0.092 (0.038) \\
+2001 & 14 & -0.093 (0.038) & -0.092 (0.038) \\
+2002 & 14 & -0.101 (0.040) & -0.099 (0.040) \\
+2003 & 14 & -0.097 (0.039) & -0.095 (0.039) \\
+2004 & 14 & -0.097 (0.039) & -0.096 (0.039) \\
+2008 & 14 & -0.092 (0.039) & -0.090 (0.039) \\
+2009 & 14 & -0.080 (0.047) & -0.077 (0.047) \\
+2012 & 14 & -0.099 (0.039) & -0.097 (0.039) \\
+2013 & 14 & -0.107 (0.041) & -0.105 (0.041) \\
+2014 & 14 & -0.087 (0.039) & -0.087 (0.039) \\
+2016 & 14 & -0.093 (0.038) & -0.092 (0.038) \\
+2017 & 14 & -0.097 (0.040) & -0.097 (0.040) \\
+2018 & 14 & -0.077 (0.040) & -0.076 (0.040) \\
+2019 & 14 & -0.088 (0.038) & -0.087 (0.038) \\
+2020 & 14 & -0.094 (0.038) & -0.093 (0.038) \\
+\bottomrule
+\end{tabular}
+\end{table}
