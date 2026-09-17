@@ -379,6 +379,7 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `fwl_decomp.R` | FWL variance-share decomposition of the R2 spec; identity checks unweighted/weighted, additive-FE contrast (§20). |
 | `stack_composition.R` | per-stack treated (drop/adopt/absorbed) × control (never/always/not-yet) counts + identification source → `.tex` (§18). |
 | `stacked_nevertreated.R` | stacked regression on never-treated controls only (41) vs full pool (741), corrected FE (§6). |
+| `decomp_table.R` | LaTeX table of per-cohort β_s and weights w_s (unweighted + ebal-weighted) from the stacked decomposition → `.tex` (§10). |
 | `data_description.R` | descriptive panel summary (years, cities, cohorts, N) → `.tex`. |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
@@ -395,7 +396,7 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `stacked_loo.{csv,tex}`, `atoms_harmonized.csv`, `stacked_pretrends.{csv,tex}`,
 `stacked_loo_both.{csv,tex}`, `fwl_decomp_{unweighted,weighted,summary}.csv`,
 `stack_composition.{csv,tex}`, `data_description.{csv,tex}`,
-`stacked_nevertreated.csv`.
+`stacked_nevertreated.csv`, `decomp_table.tex`.
 
 ### `figures/`
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
