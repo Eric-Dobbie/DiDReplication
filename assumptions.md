@@ -455,10 +455,22 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `stacked_full15.{csv,tex}`, `stacked_full15_regtable.tex`.
 
 ### `figures/`
+Nine figures from the plotting scripts above, each `.png` + `.pdf`:
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
 `cohort_level_estimates`, `cohort_level_variants`, `calendar_and_event_time`,
 `cs_variants_comparison`, `cengiz_vs_pp_stacked`, `cengiz_control_groups`,
-`cengiz_window_sensitivity` (each `.png` + `.pdf`).
+`cengiz_window_sensitivity`.
+
+All nine use **`theme_minimal()` with no plot title, subtitle, or caption** (axis
+labels, legends, reference lines and in-panel annotations retained);
+`plot_calendar_event.R` composes its two panels with `cowplot::plot_grid` (the
+env has no `patchwork`). There is no separate `*_minimal` variant — the canonical
+figures are themselves minimal.
+
+Not part of this pipeline: `figures/replication.png` and `figures/simulation/*.png`
+are diagnostics produced by the separately-merged `stage_*.R` scripts (Stages
+V/L/D/N from `main`), not by the fatal-stacked decomposition scripts inventoried
+here.
 
 ---
 
