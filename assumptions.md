@@ -153,6 +153,32 @@ stack keeps every non-changer as a control. This is a genuine cross-estimator
 difference in the control pool (41 vs 741), and it — together with the weighting —
 drives the sign disagreement (CS/SA positive, stacked negative).
 
+**Robustness — stacked on never-treated controls only (`stacked_nevertreated.R`,
+`output/stacked_nevertreated.csv`).** Re-running the full-panel stacked regression
+with the control pool restricted to the **41 strictly never-treated** agencies
+(dropping the 700 always-treated non-changers), corrected interactive FE:
+
+| control pool | plain | m3 (covariates) | N |
+|---|---|---|---|
+| never-treated only (41) | **−0.0933** (0.0364) | **−0.1308** (0.0368) | 10,206 |
+| full No-Change pool (741) | −0.0989 (0.0394) | −0.0971 (0.0394) | 171,444/171,906 |
+
+- **The plain estimate barely moves (−0.0989 → −0.0933, Δ = +0.006, within the
+  SE)** even though the 700 always-treated units are 94% of the control pool and
+  ~161k of the ~172k rows. The negative stacked result is **not** an artifact of
+  using always-treated units as controls — it survives on the 41 clean never-treated
+  controls alone. The SE is essentially unchanged (identification comes from the
+  treated switchers, not the control-pool size).
+- **With covariates the pools diverge** (m3: −0.097 → −0.131): covariate adjustment
+  interacts with the control composition, giving a more negative conditional estimate
+  on the clean never-treated pool.
+- **2002 is unchanged (+0.007)** — it has no controls in either spec, always
+  identified by its within-treated drop-vs-adopter contrast (§18); same 11 identified
+  cohorts.
+- **Weighting not reported:** the entropy-balancing weights were built for the 741-
+  control pool and do not validly rebalance the 41-control pool (would need `ebal`
+  re-run); only unweighted plain and m3 are shown.
+
 ---
 
 ## 7. Transformations applied (exhaustive)
@@ -352,6 +378,7 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `stacked_loo_both.R` | leave-one-cohort-out on both stacks (shipped m4, reconstructed m3), corrected FE (§19). |
 | `fwl_decomp.R` | FWL variance-share decomposition of the R2 spec; identity checks unweighted/weighted, additive-FE contrast (§20). |
 | `stack_composition.R` | per-stack treated (drop/adopt/absorbed) × control (never/always/not-yet) counts + identification source → `.tex` (§18). |
+| `stacked_nevertreated.R` | stacked regression on never-treated controls only (41) vs full pool (741), corrected FE (§6). |
 | `data_description.R` | descriptive panel summary (years, cities, cohorts, N) → `.tex`. |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
@@ -367,7 +394,8 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `cengiz_window_sensitivity.csv`, `stacked_dimensionality.{csv,tex}`,
 `stacked_loo.{csv,tex}`, `atoms_harmonized.csv`, `stacked_pretrends.{csv,tex}`,
 `stacked_loo_both.{csv,tex}`, `fwl_decomp_{unweighted,weighted,summary}.csv`,
-`stack_composition.{csv,tex}`, `data_description.{csv,tex}`.
+`stack_composition.{csv,tex}`, `data_description.{csv,tex}`,
+`stacked_nevertreated.csv`.
 
 ### `figures/`
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
