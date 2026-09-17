@@ -351,6 +351,8 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `stacked_pretrends.R` | per-sub-experiment pre-trend joint Wald tests, both stacks, corrected FE (§19). |
 | `stacked_loo_both.R` | leave-one-cohort-out on both stacks (shipped m4, reconstructed m3), corrected FE (§19). |
 | `fwl_decomp.R` | FWL variance-share decomposition of the R2 spec; identity checks unweighted/weighted, additive-FE contrast (§20). |
+| `stack_composition.R` | per-stack treated (drop/adopt/absorbed) × control (never/always/not-yet) counts + identification source → `.tex` (§18). |
+| `data_description.R` | descriptive panel summary (years, cities, cohorts, N) → `.tex`. |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
 | `plot_weight_vs_beta_facets.R` | small-multiples, per-estimator free weight axis. |
@@ -364,7 +366,8 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `cengiz_notyet_atoms.csv`, `cengiz_control_groups_summary.csv`,
 `cengiz_window_sensitivity.csv`, `stacked_dimensionality.{csv,tex}`,
 `stacked_loo.{csv,tex}`, `atoms_harmonized.csv`, `stacked_pretrends.{csv,tex}`,
-`stacked_loo_both.{csv,tex}`, `fwl_decomp_{unweighted,weighted,summary}.csv`.
+`stacked_loo_both.{csv,tex}`, `fwl_decomp_{unweighted,weighted,summary}.csv`,
+`stack_composition.{csv,tex}`, `data_description.{csv,tex}`.
 
 ### `figures/`
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
@@ -520,6 +523,17 @@ members, and for the clean-control-free cohorts the adopters are not a nuisance 
 they are the *sole* source of identification (2002) or the reason a cohort would
 otherwise vanish. The Cengiz windowed designs sidestep this entirely by dropping the
 two multiply-reversing units (§5, §11); the shipped full-panel stack keeps them.
+
+**Full per-stack composition** — treated members split by switch direction (drop /
+adopt / absorbed) and controls by treatment history (never- / always- / not-yet-
+treated), with the identification source of each stack — is in
+`R/stack_composition.R` → `output/stack_composition.{tex,csv}`. It makes the 2002
+case explicit at a glance: 2002 has 0 controls and 4 droppers + 1 adopter, so it is
+identified purely by the within-treated drop-vs-adopt contrast, whereas its
+control-free siblings 2000 (5 droppers, no adopter), 2001 and 2003 (single unit)
+have no contrast and drop out. The control rows also show the §6/§12 pool
+asymmetry: every control-bearing stack carries the same **41 never-treated + 700
+always-treated + 0 not-yet-treated** controls.
 
 ---
 
