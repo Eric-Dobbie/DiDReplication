@@ -1,0 +1,5 @@
+"FE","covariates","coef","cluster_se","N","n_agencies","mean_outcome"
+"interacted","none",-0.0933,0.0384,234150,776,0.3068
+"interacted","4 P&P",-0.092,0.0387,233520,774,0.3067
+"additive","none",-0.0986,0.037,234150,776,0.3068
+"additive","4 P&P",-0.0965,0.0372,233520,774,0.3067

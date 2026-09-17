@@ -1,0 +1,23 @@
+\begin{table}[t]\centering
+\caption{Residency Requirements and Probability of Fatal Encounter --- full
+15-cohort stacked approach (controls added to all cohorts, no window). Dependent
+variable: \texttt{any.fatalities}. Robust standard errors clustered by city in
+parentheses. $^{*}$p$<$0.05.}
+\label{tab:fatal-full15-reg}
+\begin{tabular}{lcccc}
+\toprule
+ & (1) & (2) & (3) & (4) \\
+\midrule
+Requirement Dropped & -0.093$^{*}$ & -0.092$^{*}$ & -0.099$^{*}$ & -0.097$^{*}$ \\
+ & (0.038) & (0.039) & (0.037) & (0.037) \\
+\midrule
+Agency $\times$ Stack FEs & Yes & Yes &  &  \\
+Agency FEs &  &  & Yes & Yes \\
+Year $\times$ Cohort FEs & Yes & Yes & Yes & Yes \\
+Controls &  & Yes &  & Yes \\
+Mean Outcome & 0.307 & 0.307 & 0.307 & 0.307 \\
+Num. Agencies & 776 & 774 & 776 & 774 \\
+Observations & 234,150 & 233,520 & 234,150 & 233,520 \\
+\bottomrule
+\end{tabular}
+\end{table}
