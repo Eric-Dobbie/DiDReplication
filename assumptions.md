@@ -661,6 +661,43 @@ the pooled beta is fit on. Reports faithfully — discrepancies flagged, not fix
   gives Σ w_s'·β_s = −9.051e-02, off the pooled by **8.40e-03 (≈8.5%)** — the §10
   gap; the estimation sample is the correct one.
 
+**What each step ran on (15 vs 11 cohorts — clarification).** All of steps 1–8 run
+on the **one** file `stacked_fatal.csv`, estimation sample = **171,906 rows, 15
+cohorts** (2000–2020); step 7 uses that file's **native `weights` column** — no
+second dataset, no foreign weights. The "11" that appears elsewhere is *not* the
+file's cohort count; the shipped stack is 15 cohorts. Two different 11-subsets exist
+and they are **not** the same set:
+- **11 control-bearing cohorts** (2004, 2008, 2009, 2012, 2013, 2014, 2016, 2017,
+  2018, 2019, 2020) — the ones with clean controls, hence the ones the entropy
+  weights actually balance. The **4 treated-only cohorts** (2000, 2001, 2002, 2003)
+  carry **weight = 1 on every row** (nothing to balance).
+- **11 identified cohorts** under the interacted FE (2002, 2004, 2008, 2009, 2012,
+  2013, 2014, 2017, 2018, 2019, 2020) — those with V_s > 0. This set **includes 2002**
+  (treated-only but identified via its adopter) and **excludes 2016** (absorbed
+  reversal, V_s = 0). §9.
+
+Consequently the weighted pooled coefficient depends on which "11" is meant:
+
+| spec | cohorts | N | pooled β |
+|---|---|---|---|
+| unweighted, all 15 (**R2**) | 15 | 171,906 | −0.098915 |
+| weighted, all 15 (**step 7**) | 15 | 171,906 | −0.108393 |
+| weighted, **11 identified** (incl. 2002, excl. 2016) | 11 | 156,198 | −0.108393 |
+| weighted, **11 control-bearing** (incl. 2016, excl. 2002) | 11 | 171,659 | −0.124043 |
+
+- The step-7 figure (−0.1084) is **valid for the file as shipped** and equals the
+  **11-identified** pooled to 15 digits — the 4 unidentified cohorts (2000, 2001,
+  2003, 2016; all V_s = 0) contribute ~1e-16.
+- Restricting instead to the **11 cohorts the weights were built for** gives
+  **−0.1240 — matching neither R2 nor step 7.** The gap is cohort **2002**: treated-
+  only (weight = 1) but identified via its reverse-direction adopter (revere,
+  β₂₀₀₂ = +0.007); keeping it pulls the weighted pooled toward zero.
+- So the weights were **not** applied to a stack they weren't constructed for (native
+  column of the same file), **but** the shipped weighted estimate is a *mix* — 11
+  entropy-balanced cohorts plus 2002 riding in unweighted — and thus inherits the
+  same adopter-dependent 2002 fragility as §17–18. Fully-balanced (drop the treated-
+  only cohorts) the weighted pooled is −0.1240.
+
 Outputs: `output/fwl_decomp_{unweighted,weighted,summary}.csv`.
 
 ---
