@@ -64,15 +64,11 @@ p <- ggplot() +
   scale_x_continuous(breaks = scales::pretty_breaks(9)) +
   guides(color = guide_legend(override.aes = list(size = c(3, 4.4, 3)))) +
   labs(
-    title    = "Cohort-level view: one point per treated cohort",
-    subtitle = "Outcome: P(fatal civilian encounter). CS/SA atoms rolled up to cohort by their weights; stacked is already cohort-level.\nCS and SA coincide exactly here (balanced panel + never-treated controls) -- their points overlap. Dotted lines = overall ATT.",
     x = "Cohort-level estimate (effect on probability of a fatal encounter)",
     y = "Cohort aggregation weight"
   ) +
-  theme_bw(base_size = 12) +
+  theme_minimal(base_size = 12) +
   theme(
-    plot.title    = element_text(face = "bold", size = 13),
-    plot.subtitle = element_text(size = 8.5, color = "grey30"),
     legend.position = "top",
     panel.grid.minor = element_blank()
   )

@@ -1,0 +1,21 @@
+\begin{table}[t]\centering
+\caption{Stacked fatal-encounters regression on the \emph{full} 15-cohort stack:
+every change-cohort ($\ge 2000$) is given all 741 pure control cities over the full
+panel (controls added to 2000--2003; no window), reproducing the paper's Table~A.5
+col.\ 3 sample ($N=233{,}520$). \texttt{no.req} on \texttt{any.fatalities}; SEs
+clustered on \texttt{agency.id}; unweighted. The interacted-FE + controls cell is
+the specification ``as described'' ($-0.092$); the published Table~5 col.\ 3
+($-0.103$) instead uses the additive \texttt{agency.id} FE on the shipped stack
+($N=171{,}444$, controls only on 2004--2020).}
+\label{tab:stacked-full15}
+\begin{tabular}{llrrr}
+\toprule
+Fixed effects & Covariates & Coef. & Cluster SE & $N$ \\
+\midrule
+agency$\times$stack + yr$\times$coh & none & -0.093$^{*}$ & 0.038 & 234,150 \\
+agency$\times$stack + yr$\times$coh & 4 P\&P & -0.092$^{*}$ & 0.039 & 233,520 \\
+agency.id + yr$\times$coh & none & -0.099$^{*}$ & 0.037 & 234,150 \\
+agency.id + yr$\times$coh & 4 P\&P & -0.097$^{*}$ & 0.037 & 233,520 \\
+\bottomrule
+\end{tabular}
+\end{table}

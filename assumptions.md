@@ -236,6 +236,59 @@ Paper's `m3`/`m4` use **`agency.id + year.cohort`** FE (shared agency FE). The
 **Decision:** the decomposition (`run_extraction.R`) uses the **interacted FE**
 (pooled stacked = **−0.0989**). Rationale in §9.
 
+### Reproducing the paper's table (`spec_grid.R`, `output/spec_grid.{tex,csv}`)
+The published fatal-encounters table (paper p.25; `police_residency_main.R` m1–m4,
+covariates = **`log.pop + log.med.inc + pct.white + pct.white.officers.imputed`**)
+reports for "Requirement Dropped": col 1 −0.097 (0.037), col 2 −0.093 (0.036),
+**col 3 −0.103 (0.039)**, **col 4 −0.091 (0.037)**. Note **col 3's SE is 0.039, not
+0.037** (an earlier note/prompt had 0.037 — corrected here against the PDF). A
+2×2×2 grid (FE × covariates × weights, SE clustered on `agency.id`) reproduces both
+stacked columns **exactly** in the **additive-`agency.id` FE + 4-controls** row:
+- **col 3** = additive FE, 4 controls, **unweighted** → −0.1026 (0.0393), N 171,444.
+- **col 4** = same cell, **weighted** → −0.0908 (0.0373), N 171,444.
+
+Both require the **shared `agency.id` FE**; the leakage-free `agency×stack`
+counterparts are −0.0971 (0.0400) and −0.0891 (0.0375) — close but distinct
+(swapping FE moves col 3 by +0.005, col 4 by +0.002). No other cell matches either
+target. **Implementation note:** felm's weighted `$se` is the *non-clustered*
+analytic SE (~0.004); the clustered SE is `$cse` — `spec_grid.R` reports `$cse`.
+
+### The full 15-cohort stack "as described", and a Table 5 / Table A.5 inconsistency
+(`stacked_full15.R` → `output/stacked_full15.{tex,csv}`, `stacked_full15_regtable.tex`)
+
+The paper *describes* (p.17) the stack as each change-cohort "along with **all pure
+control cities**", no window. Building that — every change-cohort (≥2000) given all
+741 controls over the full panel, so controls are **added to the 2000–2003 stacks**
+the shipped file leaves treated-only — gives **N = 233,520 with covariates**, which
+**exactly matches the paper's own Table A.5 col 3** (233,520). On this full stack,
+unweighted, clustered on `agency.id`:
+
+| FE | covariates | coef | cluster SE | N |
+|---|---|---|---|---|
+| interacted (agency×stack) | 4 P&P | **−0.092** | 0.039 | 233,520 |
+| interacted (agency×stack) | none | −0.093 | 0.038 | 234,150 |
+| additive (agency.id) | 4 P&P | −0.097 | 0.037 | 233,520 |
+| additive (agency.id) | none | −0.099 | 0.037 | 234,150 |
+
+The "as described" cell (interacted FE + controls on all cohorts) is **−0.092**,
+vs the published Table 5 col 3 **−0.103**. The two differ on two axes, each pulling
+toward zero: adding controls to 2000–2003 (additive FE: −0.103 → −0.097) and
+switching to the interacted FE (−0.097 → −0.092). 13 of 15 cohorts identify (2001–
+2003 now do; 2000 has no observed pre-period, 2016 is absorbed).
+
+**The inconsistency (documented, not fixed):** the published fatal-encounters
+results are not the design the paper describes.
+- **FE:** the prose/label say "City and Cohort × Year FEs" and the design implies a
+  Cengiz-style interacted unit FE, but the code (`police_residency_main.R` m3/m4)
+  uses the **additive `agency.id`** FE (§9).
+- **Sample:** **Table 5** (binary outcome) col 3 uses **N = 171,444** — the shipped
+  stack, with controls only on 2004–2020, so 2000–2003 are treated-only. But the
+  paper's **Table A.5** (count outcome) col 3 uses **N = 233,520** — the full stack
+  with controls on *all* cohorts. So the paper already ran the "controls everywhere"
+  construction for the count outcome but not for the binary Table 5; applying it to
+  the binary outcome is what yields −0.092. (Both tables' col 4, weighted, are
+  171,444, since the ebal weights exist only for the 11 control-bearing cohorts — §20.)
+
 ---
 
 ## 9. The fixed-effects decision (leakage-free `agency × stack`)
@@ -379,6 +432,9 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `fwl_decomp.R` | FWL variance-share decomposition of the R2 spec; identity checks unweighted/weighted, additive-FE contrast (§20). |
 | `stack_composition.R` | per-stack treated (drop/adopt/absorbed) × control (never/always/not-yet) counts + identification source → `.tex` (§18). |
 | `stacked_nevertreated.R` | stacked regression on never-treated controls only (41) vs full pool (741), corrected FE (§6). |
+| `decomp_table.R` | LaTeX table of per-cohort β_s and weights w_s (unweighted + ebal-weighted) from the stacked decomposition → `.tex` (§10). |
+| `spec_grid.R` | 2×2×2 FE×covariate×weight grid reproducing the paper's stacked cols 3–4 → `.tex` (§8). |
+| `stacked_full15.R` | full 15-cohort stack (controls on all cohorts, no window) run "as described"; spec + standard regression tables → `.tex` (§8). |
 | `data_description.R` | descriptive panel summary (years, cities, cohorts, N) → `.tex`. |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
@@ -395,13 +451,26 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `stacked_loo.{csv,tex}`, `atoms_harmonized.csv`, `stacked_pretrends.{csv,tex}`,
 `stacked_loo_both.{csv,tex}`, `fwl_decomp_{unweighted,weighted,summary}.csv`,
 `stack_composition.{csv,tex}`, `data_description.{csv,tex}`,
-`stacked_nevertreated.csv`.
+`stacked_nevertreated.csv`, `decomp_table.tex`, `spec_grid.{csv,tex}`,
+`stacked_full15.{csv,tex}`, `stacked_full15_regtable.tex`.
 
 ### `figures/`
+Nine figures from the plotting scripts above, each `.png` + `.pdf`:
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
 `cohort_level_estimates`, `cohort_level_variants`, `calendar_and_event_time`,
 `cs_variants_comparison`, `cengiz_vs_pp_stacked`, `cengiz_control_groups`,
-`cengiz_window_sensitivity` (each `.png` + `.pdf`).
+`cengiz_window_sensitivity`.
+
+All nine use **`theme_minimal()` with no plot title, subtitle, or caption** (axis
+labels, legends, reference lines and in-panel annotations retained);
+`plot_calendar_event.R` composes its two panels with `cowplot::plot_grid` (the
+env has no `patchwork`). There is no separate `*_minimal` variant — the canonical
+figures are themselves minimal.
+
+Not part of this pipeline: `figures/replication.png` and `figures/simulation/*.png`
+are diagnostics produced by the separately-merged `stage_*.R` scripts (Stages
+V/L/D/N from `main`), not by the fatal-stacked decomposition scripts inventoried
+here.
 
 ---
 
