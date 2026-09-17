@@ -1,0 +1,15 @@
+\begin{table}[]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|c|c|c|}
+\hline
+Model                                                  & Estimate & SE      & Support Their Results        \\ \hline
+Their Specification                                    & $−0.09081$ & $0.00433$ & Yes                          \\ \hline
+Remove Covariates                                      & $-0.10440$ & $0.03827$ & Yes                          \\ \hline
+Fix agency*stack FE                                    &$ -0.09892$ & $0.03944$ & Yes                          \\ \hline
+Fix windowing for stacks                               & $-0.06151$ & $0.06924$ & No, Insignificant            \\ \hline
+Fix windowing, not-yet-treated controls                & $-0.06163$ & $0.06921$ & No, Insignificant            \\ \hline
+Switch to CS, never-treated controls, full aggregation & $0.04477$  & $0.06503$ & No, sign flip, insignificant \\ \hline
+\end{tabular}
+}
+\end{table}

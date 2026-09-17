@@ -1,6 +1,11 @@
 \documentclass[12pt]{article}
 \usepackage{graphicx} % Required for inserting images
 \usepackage[margin = 1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{todonotes}
+\usepackage{booktabs}
 
 %\RequirePackage[backend=biber,sorting=nty, style=chicago-authordate, natbib=true, hyperref=true, backref=false, isbn=false]{biblatex}  % reference manager
 %\DeclareLanguageMapping{american}{american-apa} %added
@@ -31,7 +36,7 @@
 \doublespacing
 \addbibresource{bib/PoliceResidency.bib}
 
-\title{Reweighting Estimator Variation in Staggered Differences-in-Differences Designs}
+\title{Replication of \textcite{payson2025residency}: An explainer of staggered adoption DiD estimators}
 \author{Eric Dobbie}
 \date{\today}
 
@@ -40,33 +45,20 @@
 \maketitle
 
 \begin{abstract}
-    \noindent In settings with staggered treatment adoption, two-way fixed effects estimators have been shown to produce biased estimates of the average treatment effect on the treated (ATT) when treatment effects are heterogeneous. A growing family of estimators addresses this problem, but applied researchers have little guidance for selecting an estimator among these options. Through a replication exercise of \textcite{payson2023resreq}, with an application to police residency requirements, a policy setting with canonical staggered adoption, I demonstrate best practices for researchers facing disagreement across estimators.
+    \noindent In settings with staggered treatment adoption, two-way fixed effects estimators have been shown to produce biased estimates of the average treatment effect on the treated (ATT) when treatment effects are heterogeneous. A growing family of estimators addresses this problem through reweighting of ``clean comparisons,'' where the bias inducing comparisons to earlier treated units are removed from the analysis. Through a replication exercise of \textcite{payson2025residency}, with an application to police residency requirements, a policy setting with staggered adoption across municipalities, I show that these estimators can disagree, leading to point estimates with different signs, under high levels of treatment effect heterogeneity. I demonstrate that one of the primary results of \textcite{payson2025residency} requires a set of assumptions to all hold, and relaxing even one of these assumptions leads to the ATT estimate losing significance.
 \end{abstract}
 
 \newpage
 
 \section{Introduction}
 
-\begin{itemize}
-    \item Canonical DiD design and core assumptions
-\end{itemize}
-
 Differences-in-Differences (DiD) is a commonly used method in political science. In order to estimate causal effects of policy interventions, DiD approaches compare units that have received the policy change to those that have not received the policy change under the assumption that the outcome of interest would have changed the same way in each unit absent the intervention.
 
-\begin{itemize}
-    \item TWFE is the primary estimator used in DiD settings
-\end{itemize}
+According to \textcite{chiu2026causal}, two-way fixed effect (TWFE) models are the predominant method for analyzing panel data for causal identification, with 64 out of 102 studies published in leading political science journals utilizing a TWFE model for their analysis. In applied political science work, policy treatments are often staggered as different geographical areas apply the policies at different times. If the timing of these treatments changes the effect of the treatment, then the TWFE estimators that are commonly applied in these settings will be biased. 
 
-According to \textcite{chiu2026causal}, two-way fixed effect (TWFE) models are the predominant method for analyzing panel data for causal identification, with 64 out of 102 studies published in leading political science journals utilizing a TWFE model for their analysis. 
+\textcite{payson2025residency} present an analysis of police residency requirements. Residency requirements, as the name suggests, are a policy intervention whereby municipal employees are required to live in the municipality in which they work\footnote{Alternate definitions of residency requirements often include rules that dictate municipal employees must live within a predetermined distance of the city rather than strictly inside city limits. However, for this paper, the strict definition will be used throughout for consistency with the choices of \textcite{payson2025residency}.}. The logic behind residency requirements is that officers who interact with members of a community will be less likely to discriminate against them, and requiring officers to live in the community leads to forced contact with the discriminated against group, which could give them a sense of empathy for those in the community \parencite{hopkins_politicized_2010, pettigrew_recent_2011, hubert_social_2022}. The authors estimate the effect of removing a residency requirement on two outcomes: the racial composition of the force and the probability of a fatal police-civilian encounter in an agency-year. I focus on the latter. 
 
-\begin{itemize}
-    \item Applied work often has staggered treatments
-    \item If treatment timing matters for the effect size the TWFE estimator is biased
-\end{itemize}
-
-In applied political science work, policy treatments are often staggered as different geographical areas apply the policies at different times. 
-
-If the timing of these treatments changes the effect of the treatment, then the TWFE estimators that are commonly applied in these settings will be biased. 
+The primary specification of \textcite{payson2025residency} is TWFE, and they engage the staggered-timing literature through a stacked design with clean controls, entropy balancing, and cohort-exclusion checks \parencite{cengiz2019effect}. They find that removing a residency requirement reduces the probability of a fatal encounter by roughly 9 to 10 percentage points, against a base rate near 31 percent. This approach meets any reasonable standard set for applied researchers in the staggered treatment literature. However, that standard dictates which estimators researchers should run, not how those estimators should be implemented. I show that their result is sensitive to implementation choices the literature leaves to the analyst: if the aggregation scheme or the number of time periods within each sub-experiment is changed, or an alternative estimator is used, the result loses significance.
 
 \section{Staggered Treatments Lead to Bad Comparisons}
 
@@ -81,58 +73,332 @@ The problem with the classic TWFE approach is so-called ``forbidden comparisons'
 
 \begin{itemize}
     \item Using the decomposition, we can see that we will sometimes use treated units as controls when adoption is staggered
-    \item The bias depends on the severity of the treatment effect hererogeneity across cohorts
+    \item The bias depends on the severity of the treatment effect heterogeneity across cohorts
 \end{itemize}
 
 \section{Existing Estimators for Staggered Treatment Settings}
 
 \begin{itemize}
-    \item Cover the family of relevant estimators
-    \begin{itemize}
-        \item Callaway Sant'anna
-        \item Sun and Abraham
-        \item Stacked Regression
-    \end{itemize}
-    \item Briefly describe how each estimator works using intuition rather than technical descriptions
+    \item The core idea: restrict to clean comparisons before estimation, put effects together through aggregation. Focus on the three selected estimators.
+    \item Each estimator has a common target.
+    \item The differences are a set of assumptions about what to include in the clean comparisons and estimation of the 2x2 cells
     \begin{itemize}
         \item Core additional assumptions
-        \item Treatment of control units (include never-takers?)
-        \item Aggregation for ATT estimate (where do the weights come from)
+        \item Treatment of control units (include not-yet-takers?)
     \end{itemize}
-    \item Summarize this in a table?
-    \item The core idea: these estimators are all related and solve the same theoretical problem but can produce different estimates. There is no clear guidance on how to select or how important selecting the 'correct' estimator is
+    \item Aggregation, sometimes necessary due to many periods/many cohorts, so how do we do it?
+    \begin{itemize}
+        \item Event study
+        \item Calendar
+        \item cohort level
+        \item single ATT like thing
+    \end{itemize}
+    \item The core idea: these estimators are all related and solve the same theoretical problem but can produce different estimates. There is no clear guidance on how to select or how researchers should evaluate differences across estimators.
 \end{itemize}
 
+The econometrics literature on correcting this bias has been extraordinarily active over the last several years (\cite{callaway2021difference, sun2021estimating, borusyak2024revisiting, gardner2022two, goodman2021difference,baker2022much, baker2026difference}). Fundamentally, the solution to the problem is intuitive; researchers must restrict their analysis down to the clean comparisons and then recombine them through aggregation. By ``clean comparisons,'' I mean the comparisons to never-treated or not-yet-treated units. These are the exact comparisons that remain uncontaminated by the bias outlined in \cite{goodman2021difference} when treatment effects vary across time within treatment cohorts. 
 
-\section{\textcite{payson2023resreq} Replication}
+In this paper, I will use the application to \cite{payson2025residency} to walk through the use of a subset of these estimators that estimate $2 \times 2$ comparisons directly using clean comparisons and then aggregate them together, which I will refer to as reweighting estimators. I will directly walk through the application of \textcite{sun2021estimating}, \textcite{callaway2021difference}, and stacked regression \parencite{baker2022much, cengiz2019effect, wing2024stacked}. Stacked regression is the selected estimator used as a robustness check in \textcite{payson2025residency}. Each estimator can be directly traced back to effects estimated for a cohort in each post-treatment time period. Through this replication process, I will demonstrate that under treatment effect heterogeneity these estimators can produce competing results, as they allow for different comparisons and weight the resulting estimates for aggregation differently. I will then discuss the ways applied researchers should adjudicate between potentially competing result sets.
 
-\textcite{payson2023resreq} present an analysis of police residency requirements. Residency requirements, as the name suggests, are a policy intervention whereby municipal employees are required to live inside or nearby the municipality in which they work. The logic behind residency requirements is that officers who interact with members of a community will be less likely to discriminate against them, and requiring officers to live in the community leads to forced contact with the discriminated against group, which could give them a sense of empathy for those in the community (\cite{pettigrew_recent_2011}, \cite{hopkins_politicized_2010}, \cite{hubert_social_2022}). The authors analyze the effect of removing a residency requirement on the probability of a fatal encounter with police officers. The empirical approach is a DiD approach with treatments assigned at the city level, using a two-way fixed effects (TWFE) estimator and a stacked regression to estimate the ATT. They find that removing a residency requirement significantly reduces the probability of a fatal encounter with police. This runs counter to prevailing theory, which predicts that residency requirements will improve policing performance through social contact and local knowledge (\cite{hubert_social_2022, pettigrew_recent_2011}. 
+To establish notation that will be used throughout the remainder of the paper, treatment cohorts are indexed by their treatment timing $g$. For example, a cohort that is treated in $2000$ will be represented as the $g = 2000$ treatment cohort. Time, irrespective of treatment timing, will be represented by the index $t$. This could also be referred to as calendar time. Event time, represented by index $e$, refers to the distance from treatment. As an example, in $t = 2001$, for $g = 2000$, event time is $e = 2001 - 2000 = 1$, and for $g = 2005$, the same calendar time gives $e = 2001 - 2005 = -4$. 
 
-Applying the procedure shown above, we can first plot the TWFE regression weights using \textcite{goodman2021difference} decomposition to show which comparisons are driving the results in the paper.
+\subsection{How Clean Comparisons are Constructed}\label{sec:cc_const}
 
-One prominent solution to this problem in TWFE is put forward by \textcite{callaway2021difference}, who propose estimating a ``group-time average treatment effect'' where ``groups'' are units treated at the same time period. The \textcite{callaway2021difference} approach produces dyadic ATT estimates for each treatment group and time period in the data. Using a simple aggregation scheme, averaging across all post-treatment comparisons, \hyperref[fig:paysonrep]{Figure \ref{fig:paysonrep}} shows the average of the ATT estimates for each treatment group in \textcite{payson2023resreq}, utilizing the simple DiD specification without covariates as reported in Table 3 of \textcite{payson2023resreq}, which contains the primary result of the paper, showing a statistically significant reduction in fatalities when removing a residency requirement. As can be seen in the figure, the only one group (2004) is estimated to have a negative effect on fatal encounters. All other groups are statistically insignificant or positive effects.
+Each of these reweighting estimators has a common target, a clean $2 \times 2$ comparison to a selected control group. Within each estimator, there are some researcher degrees of freedom in the construction of these sets, and they vary by estimator. The primary choice to be made is whether the comparison group will be comprised of never-treated or not-yet-treated observations\footnote{The package defaults for each of these estimators is to use never-treated units as controls.}.
 
-\begin{figure}[H]
+In order to build out a stacked regression, the researcher first constructs a separate dataset, or  ``stack,'' for each adoption cohort $g$.\footnote{For a more detailed overview of building out a stacked dataset, see \textcite{wing2024stacked}.} Each stack is restricted to an event ``window'' around $g$, such that $k_p$ periods before and $k_a$ periods after treatment are included in the stack. These stacks contain never-treated controls, or, at researcher discretion, can contain not-yet-treated units that never enter treatment through period $g+k_a$. These controls can be shared across stacks such that the same control unit appears across many (or all) stacks. This leads to a sub-experiment within each stack such that treatment timing does not vary within the stack. A pooled effect is then directly estimated using the following model:
+
+\begin{equation}\label{eq:interactive}
+    Y_{igt} = \beta_1 D_{igt} + \lambda \mathbf{X}_{it} + \gamma_{ig} + \delta_{tg} + \epsilon_{igt}
+\end{equation}
+
+Where $\beta$ is the pooled treatment effect, $\mathbf{X}_{it}$ is a vector of covariates, $\gamma$ is a unit-by-stack fixed effect, $\delta$ is a time-by-stack interacted fixed effect, and $\epsilon$ is the error term.
+
+\subsection{How Clean Comparisons are Aggregated}\label{sec:aggregation}
+
+While \textcite{callaway2021difference} propose using the $ATT(g,t)$ as the target estimand of staggered treatment DiD, in settings with many adoption cohorts and/or time periods interpreting these individual comparisons might not be directly possible. Generally, there are four primary aggregation targets that are easily characterized for each of these reweighting estimators: (1) calendar effects, (2) event study effects, (3) cohort level effects, and (4) a single ATT. Calendar effects are targeting the effect in each time period $t$, irrespective of the treatment timing.
+
+As described above, stacked regression is typically estimated as a single pooled regression with one ATT as the target. Despite this, it still fits in the class of reweighting estimators as the comparisons within each stack are always clean and the pooled effect is a non-negatively weighted average of stack-specific effects (see Appendix). \textcite{wing2024stacked} show this convex decomposition when the treatment share is constant across stacks. However, the result presented in the appendix generalizes their finding to any stacked panel regardless of treatment share or panel balance. Fundamentally, stacked regressions targets a single pooled ATT with the same building blocks, the $\text{ATT}(g,t)$, under an implicit weighting scheme. \textcite{wing2024stacked} and the generalized proof in the appendix show that these weights are given by the share of residualized treatment variation within the stack-specific effects.\footnote{It is also possible to form calendar effects and event study estimates using a stacked regression framework, as shown in \textcite{cengiz2019effect} and \textcite{wing2024stacked}. For the purposes of this replication, the focus is limited to disaggregation to cohort-level effects.}
+
+
+\section{\textcite{payson2025residency} Replication}
+
+\begin{itemize}
+    \item The estimates are sensitive to estimator selection, which sets of assumptions are necessary for their result to hold (still negative and significant)?
+    \item Answer each of the following questions to build out a case that the result is fragile:
+    \begin{enumerate}
+        \item How did they construct stacks?
+        \item Where does the negative estimate come from? Is it driven by a single cohort?
+        \item Is the result sensitive to researcher choices during stack formation? (control units, windowing)
+        \item What about estimator selection? Do CS and SA agree with stacked (no)
+        \item What would we conclude about the effect at different levels of aggregation? Put another way, is the aggregations scheme (single ATT, calendar, event, cohort effects) important for our substantive conclusions?
+        \end{enumerate}
+\end{itemize}
+
+\textcite{payson2025residency} first estimate a TWFE model to identify the ATT of removal of a residency requirement on the probability of a fatal encounter, finding a reduction in probability of $~9\%$. As a first diagnostic step, this finding can be decomposed according to \textcite{goodman2021difference} decomposition to see whether contaminated comparisons are entering the estimated effect.
+
+The econometric specification used to estimate the stacked regression presented in \textcite{payson2025residency} is:
+
+\begin{equation}\label{eq:add_model}
+    Y_{igt} = \beta D_{igt} + \lambda \mathbf{X}_{it} + \gamma_{i} + \delta_{tg} + \epsilon_{igt}
+\end{equation}
+
+Where, similar to the model in Equation \ref{eq:interactive}, $\beta$ is the pooled treatment effect, $\mathbf{X}_{it}$ is a vector of covariates,\footnote{Specifically, log scaled city population, log scaled median income in the city, the percent of the city population that is white, and percentage of officers that are white. City level covariates are drawn from the 2005-2020 American Community Survey. Prior to 2005, the city level covariates are interpolated from decennial Census results. Officer demographics are drawn from LEMAS surveys that are conducted periodically with 9 surveys fielded from 1987 to 2020. The annual counts are imputed from these surveys.} $\gamma$ is a unit (city) level fixed effect, $\delta$ is a time-by-stack interacted fixed effect, and $\epsilon$ is the error term. This specification is what the replication code actually estimates, but careful readers will notice that $\gamma$ is not estimated as a unit-by-stack effect. This does not appear to be an intentional decision by the authors, as their econometric specification described in their paper includes an agency-by-stack fixed effect. 
+
+Table \ref{tab:spec-grid} shows that the additive specification reproduces the reported results in Table 5 of \textcite{payson2025residency}. Correcting this coding error does not substantively alter the pooled point estimate. However, as the proof in the appendix demonstrates (see Lemma 1, in particular), a stack-interacted fixed effect is mathematically required to decompose the pooled ATT into valid stack-specific estimates. Because control agencies are repeated across sub-experiments, an additive unit fixed effect forces them into a single global baseline. This generates structural dependence across the first-order conditions and causes cohort-level estimates to herd together, effectively masking underlying treatment effect heterogeneity across stacks. The corrected specification, featuring interacted agency-by-stack fixed effects, is defined in Equation \ref{eq:interactive} above. Unless noted otherwise, minor discrepancies with the published estimates in \textcite{payson2025residency} stem directly from this correction.
+
+
+\subsection{Stack Construction}
+
+The full panel of data used for the base TWFE specification has 15 treatment cohorts.\footnote{A full description of the data is available in Table \ref{tab:data-description}.} For each treatment cohort, they construct a stack using all non-changers over the panel, such that the comparison is made up of never-treated and always-treated units. Table \ref{tab:stack-composition} shows the full composition of each stack with the number of cites that drop a requirement, adopt a requirement, the number of never-treated controls, and the number of always-treated controls. 
+
+In general, the use of never-changing units as controls rather than never-treated units might be ill-advised. Always-treated units, in most policy settings, entered treatment at some unobserved point in time before the beginning of the panel. If treatment effects change over time then \textcite{goodman2021difference} shows that these are the exact forbidden comparisons that lead to bias in TWFE. In this setting, treatment adoption means the removal of a policy, which is a strange ``always-treated'' state to be in, it could mean that a city had a policy at some point before the panel begins or that they never had a policy at all. For this to lead to bias in the estimated effects in the stacked specification, one would need to believe that the treatment effect of not having a policy was changing \textit{within the panel} for units treated before the panel. In this specific setting, units are observed if their treatment status changes from 1987 to 2000 before the fatal encounters data begins and excluded from the analysis if they enter or leave treatment in that time period. As a result, bias only comes from treatment dynamics over 13 years post treatment. If the analysis is redone with only never-treated controls, the results do not meaningfully change, which makes sense based on how far downstream treatment dynamics would need to be for results to change based on the inclusion of these always-treated controls.
+
+In constructing a stacked dataset, researchers must make choices about the number of periods to include before and after treatment within each stack. \textcite{payson2025residency} utilize the full panel of available data in the construction of the stacked datasets, which is in contrast to standard stacked dataset construction \parencite{cengiz2019effect, baker2022much, wing2024stacked} where a standard number of pre-treatment and post-treatment periods must be included for each stack. This means that there is variation introduced in the number of pre-treatment and post-treatment periods across cohorts. For example, the stack at $g = 2018$ has 18 pre-treatment periods and 3 post-treatment periods while the stack at $g = 2004$ has 4 pre-treatment periods and 17 post-treatment periods. The consequence of this is that early adopters provide more years of post-treatment data, which could skew the pooled estimate if the treatment effect is dynamic over time. Additionally, as stacks require parallel trends to hold over the full pretreatment periods, later adopters face a rather strict version of the parallel trends assumption whereby parallel trends must hold for the full pre-treatment time span.
+
+To test sensitivity to the number of included periods, the stacks can be reconstructed using a variety of temporal bounds.\footnote{For this exercise I will utilize a symmetrical window around treatment timing such that, in the notation of Section \ref{sec:cc_const}, $k = k_p = k_a$ and each stack includes periods $[g - k, g+k]$. The symmetric window is not necessary, it simply reduces the number of possible windows.}
+
+\begin{figure}
     \centering
-    \includegraphics[width=0.75\linewidth]{figures/replication.png}
-    \caption{ATT Estimates by Treatment Year \parencite{payson2023resreq}}
-    \label{fig:paysonrep}
+    \includegraphics[width=0.5\linewidth]{}
+    \caption{Caption}
+    \label{fig:placeholder}
 \end{figure}
 
-Next, I aggregate these ATT estimates using weights proportional to group size to obtain an overall estimate of the ATT. Using model specifications (1) and (2) from Table 3 in \textcite{payson2023resreq} and applying doubly robust estimators as recommended by \textcite{callaway2021difference} produces the ATT estimates in \hyperref[tab:paysonreptab]{Table \ref{tab:paysonreptab}}. In contrast to the findings reported by \textcite{payson2023resreq}, using the alternate doubly robust estimators to adjust for variation in treatment timing does not produce a negative effect.
+\subsection{Stack Decomposition}
 
-\input{tables/paysonreptab}
+As described in section \ref{sec:aggregation}, the single pooled effect reported by stacked regression can be decomposed into cohort level effects. These cohort level effects are identical to running a standard TWFE model on the stack itself. Table \ref{tab:cohort-weights} reports each stack's estimated effect ($\hat{\beta}$) and weight contributed to the pooled effect estimated using the econometric specification in Equation \ref{eq:interactive} without covariates.
 
-Put together, the group-level aggregation and the overall aggregation across model specifications provide evidence that the negative effect of removing a residency requirement on fatal encounters with police is not robust to these specification adjustments. As the existing evidence is not sufficient to draw conclusions about the effect of residency requirements on misconduct among police, I present an alternate approach that circumvents the issues presented in this section using a synthetic control analysis.
+\input{tables/body_tables/stack_weights}
 
+It is worth understanding why some of these cohorts are unable to be identified. Within the 15 cohort panel, 4 of the cohorts produce no effect for the pooled estimation for various reasons. First, the 2000 treatment cohort, with 5 requirements dropped, is unable to be identified for multiple reasons. Primarily, there is no outcome data from Fatal Encounters prior to 2000. This alone makes it impossible to identify an effect for this cohort in any DiD specification. Additionally, as is the case with the 2001 and 2003 cohorts, entropy balancing requires a 4-year window to match treatment and control units for entropy balancing that is used in some specifications, so there are no control units assigned to these cohorts.\footnote{The description of the stack construction in the paper implies that clean controls should be attached to \textit{every} cohort, regardless of the ability to generate entropy balanced weights. However, the replication data contains no clean control rows for these first 4 cohorts, which is consistent with trimming for the entropy balanced weights. Rerunning the specification with clean controls leads to a modest change in the published result, but the coefficient remains negative and significant as seen in Table \ref{tab:fatal-full15-reg}.} This makes 2002 a special case, where an effect is estimated based on one city that \textit{adopts} a residency requirement serving as a comparison unit against 4 cities that drop a requirement. The identification rests on one switcher rather than the full set of clean controls for this specific cohort.
+
+The 2016 cohort is also unable to be estimated for an entirely different reason. Portsmouth, NH adopted a residency requirement in 2003, meaning that it is the lone adopter in that period, which, as shown above, does not produce a coefficient based on a lack of control units. In 2016, Portsmouth dropped their requirement. Based on the method used to construct stacks, Portsmouth's data for 2000-2015 are contained in the 2003 stack. The 2016 cohort then gets only Portsmouth's data from 2016-2020. As this cohort now contains no pretreatment data for the only treated cohort, the 2016 cohort produces no coefficient and contributes nothing to the pooled estimate. This is the same pattern applied to Memphis, TN, which reverses it's policy in 2009 after first switching in 2004. In general, policy reversals that occur within stacking windows lead to a sharp boundary on any change following the first change in treatment status.\footnote{In Table \ref{tab:stack-composition} these units are referred to as ``Boundary Reversal'' units for any change after their first policy change. In this setting, that only applies to Memphis and Portsmouth.} As a consequence, Portsmouth changes policy twice and contributes nothing to the pooled estimate as reported in the base stacked specification. In 2003 it has no comparison units and in 2016 it is a boundary reversal, leading to both changes dropping from the analysis.
+
+\subsection{Alternate Estimators}
+
+\subsection{Leave one out Validation}
 
 \section{Conclusion}
 
+\begin{itemize}
+    \item Summarize the sign flip finding
+    \item tie back to researchers decisions about estimators
+\end{itemize}
 
 \newpage
 
 \printbibliography
 
 \newpage
+
+\section*{Appendix}
+
+\setcounter{table}{0}
+\setcounter{figure}{0}
+
+\counterwithin{table}{section}
+\renewcommand{\thetable}{A.\arabic{table}}
+\renewcommand{\thefigure}{A.\arabic{figure}}
+
+
+\subsection*{Stacked Regression Weight Decomposition}
+
+In the pooled stacked regression, outcomes can be expressed as:
+
+\begin{align*}
+    y_{its} &= \gamma_{is} + \delta_{ts} + \beta D_{its} + \epsilon_{its}
+\end{align*}
+
+where $\gamma_{is}$ is a unit-by-stack fixed effect and $\delta_{ts}$ is a time-by-stack fixed effect. 
+
+We start by partialling out the fixed effects from the treatment:
+
+\begin{align*}
+    D_{its} = a_{is} + g_{ts} + v_{its}
+\end{align*}
+
+Where $a_{is}$ and $g_{ts}$ are the fitted effects from projecting $D$ onto the unit-by-stack and time-by-stack dummies. By FWL, $\hat{\beta}$ is recovered from the regression of y on $\hat{v}$:
+
+\begin{align*}
+    \hat{\beta} &= \frac{\sum_s \sum_{i,t\in s} \hat{v}_{its} y_{its}}{\sum_s \sum_{i,t\in s} \hat{v}^2_{its}}
+\end{align*}
+
+\textbf{Lemma 1 (Stack Partitions).} When the unit and time fixed effects are stack-interacted, the full system of $\sum_s (N_s + T_s)$ normal equations partitions into $S$ independent subsystems, the $s$-th being the two-way dummy regression of $D$ on stack $s$'s rows alone.
+
+Proof: The pooled regression can be decomposed to individual stack regressions. First, we partial out the fixed effects from treatment assignment and solve for the first order conditions:
+
+\begin{equation*}
+    \min_{\{a_{is}\}\{g_{ts}\}} \sum_{s=1}^S \sum_{i \in I_s} \sum_{t \in  T_s}[D_{its} - a_{is} - g_{ts}]^2
+\end{equation*}
+
+where $I_s$ is the set of units in stack $s$ and $T_s$ is the periods in stack $s$. Note that, for any unit that appears in multiple stacks, say $s$ and $s^\prime$, as a clean control, $a_{is}$ and $ a_{is^\prime}$ are separate parameters that are not necessarily equal. With a stack-interacted $a_{is}$ the FOC for the parameter involves only rows within the stack $s$. Otherwise, a single $a_i$ appears in the FOC of rows from every stack containing unit $i$ and the normal equations no longer partition.
+
+Solving the first order conditions:
+
+\begin{align*}
+    \frac{\partial}{\partial a_{is}} : -2 \sum_{t \in  T_s}[D_{its} - a_{is} - g_{ts}] &= 0
+\end{align*}
+
+Solving for $a$:
+
+\begin{align*}
+    a_{is} &= \bar{D}_{i \cdot s} - \bar{g}_s \\
+    &\text{where,} \\
+    \bar{D}_{i \cdot s} &= \frac{1}{T_s} \sum_{t \in  T_s} D_{its} \\
+    \bar{g}_s &= \frac{1}{T_s} \sum_{t \in  T_s} g_{ts}
+\end{align*}
+
+Using the same logic, we can take the first order condition with respect to $g$ to show:
+
+\begin{align*}
+     g_{ts} &= \bar{D}_{\cdot t s} - \bar{a}_s \\
+    &\text{where,} \\
+    \bar{D}_{\cdot t s} &= \frac{1}{N_s} \sum_{i \in  I_s} D_{its} \\
+    \bar{a}_s &= \frac{1}{N_s} \sum_{i \in I_s} a_{is}
+\end{align*}
+
+Every parameter carries the stack index $s$, and every FOC ranges only over rows of that stack. No parameter is shared across stacks, so the system partitions as claimed \footnote{This is why using $a_i$ without stack interacting, as implemented in \textcite{payson2025residency} is problematic for the purposes of the decomposition. The $a_i$ parameter enters across all stacks containing unit $i$, making the within stack estimation problem dependent on other stacks.}. \qed 
+
+\textbf{Corollary 1 (Two-Way Demeaning).} If a stack $s$ is balanced, the subsystem-$s$ residual is $\hat{v}_{its} = D_{its} - \bar{D}_{i \cdot s} - \bar{D}_{\cdot ts} + \bar{D}_{\cdot \cdot s}$.
+
+Without loss of generality, normalizing $\bar{a}_s = 0$ such that $g_{ts} = \bar{D}_{\cdot t s}$ so $\bar{g}_s = \bar{D}_{\cdot \cdot s}$. Plugging back into $a_{is} = \bar{D}_{i \cdot s} - \bar{g}_s$:
+
+\begin{equation*}
+    a_{is} = \bar{D}_{i \cdot s} - \bar{D}_{\cdot \cdot s}
+\end{equation*}
+
+Which satisfies $\bar{a}_s = 0$ as, once we average over the units, $\bar{D}_{\cdot \cdot s} - \bar{D}_{\cdot \cdot s} = 0$.
+
+Plugging back in to $\hat{D}_{its} = a_{is} + g_{ts}$:
+
+\begin{align*}
+    \hat{D}_{its} &= a_{is} + g_{ts} \\
+    &= \bar{D}_{i \cdot s} + \bar{D}_{\cdot t s} - \bar{D}_{\cdot \cdot s}
+\end{align*}
+
+Taking the residuals:
+
+\begin{align*}
+    \hat{v}_{its} &= D_{its} - \bar{D}_{i \cdot s} - \bar{D}_{\cdot t s} + \bar{D}_{\cdot \cdot s}
+\end{align*}
+
+Verifying the FOCs. First, plugging in to the unit FOC:
+
+\begin{equation*}
+    \sum_{t \in  T_s} \hat{v}_{its} = T_s\bar{D}_{i \cdot s} - T_s\bar{D}_{i \cdot s} - T_s\bar{D}_{\cdot \cdot s} + T_s\bar{D}_{\cdot \cdot s} = 0
+\end{equation*}
+
+and the time FOC:
+
+\begin{equation*}
+    \sum_{i \in I_s} \hat{v}_{its} = N_s \bar{D}_{\cdot t s} - N_s \bar{D}_{\cdot \cdot s} - N_s \bar{D}_{\cdot t s} + N_s \bar{D}_{\cdot \cdot s} = 0
+\end{equation*}
+
+\qed
+
+\textbf{Assumption: Balanced Panel} Note that $\sum_{t \in T_s} \bar{D}_{\cdot ts} = T_s \bar{D}_{\cdot \cdot s}$ and $\sum_{i \in I_s} \bar{D}_{i \cdot s} = N_s \bar{D}_{\cdot \cdot s}$ hold if the stack is balanced such that every unit $I_s$ is observed in every period $T_s$. This assumption is only necessary for Corollary 1. It is not necessary for Lemma 1 or the remaining portions of the proof.
+
+\textbf{Lemma 2 (Stack-Specific Coefficients).} In the saturated model, $\hat{\beta}_r$ is identical to the coefficient from regressing $y$ on $D$ using the data from stack $r$ alone, provided $\sum_{i,t \in r} \hat{v}_{itr}^2 > 0$.
+
+Now, allow for each stack to have its own treatment coefficient:
+
+\begin{equation*}
+    D_{its}^{(r)} = D_{its} \cdot \mathbf{1}\{s = r\}
+\end{equation*}
+
+So $D^{(r)}$ equals the treatment indicator on stack-$r$ rows and zero elsewhere. The saturated model is:
+
+\begin{equation*}
+    y_{its} = \alpha_{is} + \gamma_{ts} + \sum_{r = 1}^S \beta_r D_{its}^{(r)} + \epsilon_{its}
+\end{equation*}
+
+Each $\beta_r$ is the treatment coefficient for stack $r$. On a row in stack $s$, only the $r = s$ term is nonzero.
+
+For each stack's $\beta_r$, we can partial out the stack-by-unit and stack-by-time dummies from the treatment indicator, as before:
+
+\begin{equation*}
+    \min_{\{a^{(r)}_{is}\}\{g^{(r)}_{ts}\}} \sum_{s=1}^S \sum_{i \in I_s} \sum_{t \in  T_s}[D^{(r)}_{its} - a^{(r)}_{is} - g^{(r)}_{ts}]^2
+\end{equation*}
+
+This is the same minimization problem as in Lemma 1 with D replaced by $D^{(r)}$. Applying Lemma 1, the problem separates into $S$ independent subsystems. For a subsystem $s \neq r$, all rows of the treatment indicator are equal to zero and the minimization problem is:
+
+\begin{equation*}
+    \min_{\{a^{(r)}_{is}\}\{g^{(r)}_{ts}\}} \sum_{i \in I_s} \sum_{t \in  T_s}[0 - a^{(r)}_{is} - g^{(r)}_{ts}]^2
+\end{equation*}
+
+Which is minimized at $a^{(r)}_{is} = g^{(r)}_{ts} = 0$, meaning $\hat{v}^{(r)}_{its} = 0$ for all $i,t$ in any stack $s \neq r$.
+
+Within subsystem $r$ itself, the problem collapses back to the single coefficient model solved before and:
+
+\begin{equation*}
+    \hat{v}^{(r)}_{itr} = D_{itr} - \bar{D}_{i \cdot r} - \bar{D}_{\cdot t r} + \bar{D}_{\cdot \cdot r} = \hat{v}_{itr}
+\end{equation*}
+
+As a consequence, the residual regressors are mutually orthogonal such that for $r \neq r^\prime$, the product $\hat{v}^{(r)}_{its}\hat{v}^{(r^\prime)}_{its} = 0$, as wherever the first term is nonzero, the second term is zero and vice versa, and $\sum_s \sum_{i,t\in s} \hat{v}^{(r)}_{its}\hat{v}^{(r^\prime)}_{its} = 0$.
+
+Because partialled out regressors are uncorrelated with each other, the multivariate least squares solution collapses to the univariate solution applied separately. Each $\hat{\beta}_r$ can be solved as:
+
+\begin{equation*}
+    \hat{\beta}_r = \frac{\sum_s \sum_{i,t\in s} \hat{v}^{(r)}_{its} y_{its}}{\sum_s \sum_{i,t\in s} (\hat{v}^{(r)}_{its})^2}
+\end{equation*}
+
+All terms with $s \neq r$ are equal to zero and drop out, such that:
+
+\begin{equation*}
+    \hat{\beta}_r = \frac{\sum_{i,t\in r} \hat{v}_{itr} y_{itr}}{ \sum_{i,t\in r} (\hat{v}_{itr})^2}
+\end{equation*}
+
+This solution requires $\sum_{i,t\in r} (\hat{v}_{itr})^2 > 0$, or that the treatment retains variation after within-stack partialling out. When this fails, coefficients within those stacks cannot be estimated. As such, $\hat{\beta}_r$ does not exist in these cases and they are excluded from the decomposition. 
+
+Hence, $\hat{\beta}_r$ is identical to the coefficient from the regression of $y$ on $D$ within stack $r$'s data. \qed
+
+Returning to the pooled regression:
+
+\textbf{Proposition 1 (Weight Decomposition).} The pooled stacked coefficient is a weighted average of the stack-specific coefficients. \begin{align*}
+    \hat{\beta} &= \sum_s w_s \hat{\beta}_s \\
+    \text{where,} \\
+    w_s =\frac{V_s}{V}, \quad V_s &= \sum_{i,t \in s} \hat{v}^2_{its}, \quad V = \sum_{s=1}^S V_s
+\end{align*}
+
+The weights are the share of total residualized treatment variation. Weights are non-negative and sum to one\footnote{This property only holds under stack-interacted fixed effects, not as a general property of all stacked regressions. \textcite{wing2024stacked} state this convexity for a stacked fixed-effect specification under the additional condition that treatment share is constant across sub-experiments. It appears that this additional condition is unnecessary, as the within-stack FOC in Lemma 1 force the residualized treatment to have zero mean within each stack.} as $V_s$ is a sum of squares and $\sum_s w_s = \sum_s V_s / V = 1$. The weights are taken over stacks that satisfy the regularity condition.
+
+We can then rewrite $\sum_{i,t \in r} \hat{v}_{itr} y_{itr}$ as:
+
+\begin{equation*}
+    \sum_{i,t \in r} \hat{v}_{itr} y_{itr} = \hat{\beta}_r \sum_{i,t \in r} \hat{v}_{itr}^2
+\end{equation*}
+
+Substituting into the pooled expression:
+
+\begin{align*}
+    \hat{\beta} &= \frac{\sum_s \hat{\beta}_s \sum_{i,t \in s} \hat{v}_{its}^2}{V} \\
+    &= \frac{\sum_s \hat{\beta}_s V_s}{V} \\
+    &= \sum_s w_s \hat{\beta}_s 
+\end{align*} \qed
+
+\newpage
+
+\subsection*{Data Descirption}
+
+\input{tables/Appendix_tables/data_description}
+
+\newpage
+
+\subsection*{Composition of Stacks}
+
+\input{tables/Appendix_tables/stack_composition}
+
+\newpage
+
+\subsection*{2000-2003 With Controls Added}
+
+\input{tables/Appendix_tables/stacked_full15_regtable}
+
+\newpage
+
+\subsection*{Interactive versus Additive Unit Fixed-Effects}
+
+\input{tables/Appendix_tables/spec_grid}
 
 \end{document}
