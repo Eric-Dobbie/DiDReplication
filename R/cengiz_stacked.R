@@ -108,14 +108,10 @@ p <- ggplot(plotdat, aes(estimate, weight, color=design)) +
                            min.segment.length=0, box.padding=0.3, max.overlaps=20,
                            seed=6, show.legend=FALSE) +
   scale_color_manual(values=pal, name=NULL) +
-  labs(title="Stacked cohort atoms: literal Cengiz +/-4 window vs. P&P full-panel",
-       subtitle="One point per treated cohort (FWL variance-share weight vs. cohort estimate). Dotted lines = pooled stacked coefficient.",
-       x="Cohort-level stacked estimate (effect on P(fatal encounter))",
+  labs(x="Cohort-level stacked estimate (effect on P(fatal encounter))",
        y="FWL cohort weight") +
-  theme_bw(base_size=12) +
-  theme(plot.title=element_text(face="bold", size=12.5),
-        plot.subtitle=element_text(size=8.7, color="grey30"),
-        legend.position="top", panel.grid.minor=element_blank())
+  theme_minimal(base_size=12) +
+  theme(legend.position="top", panel.grid.minor=element_blank())
 ggsave(file.path(FIG_DIR, "cengiz_vs_pp_stacked.pdf"), p, width=9, height=6, device=cairo_pdf)
 ggsave(file.path(FIG_DIR, "cengiz_vs_pp_stacked.png"), p, width=9, height=6, dpi=200)
 cat("\nWrote figures/cengiz_vs_pp_stacked.{pdf,png} and output/cengiz_stacked_{atoms,summary}.csv\n")

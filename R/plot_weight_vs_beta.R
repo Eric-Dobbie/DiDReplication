@@ -96,15 +96,11 @@ p <- ggplot() +
                      aesthetics = c("color", "fill")) +
   scale_x_continuous(breaks = scales::pretty_breaks(7)) +
   labs(
-    title    = "Weight vs. component estimate across three DiD estimators",
-    subtitle = "Outcome: P(fatal civilian encounter). Points = component atoms; diamonds = overall aggregated ATT.\nCS and SA coincide exactly here (balanced panel), so the hull collapses to the CS/SA-Stacked segment.",
     x = "Component estimate (effect on probability of a fatal encounter)",
     y = "Aggregation weight"
   ) +
-  theme_bw(base_size = 12) +
+  theme_minimal(base_size = 12) +
   theme(
-    plot.title    = element_text(face = "bold", size = 13),
-    plot.subtitle = element_text(size = 9, color = "grey30"),
     legend.position = "top",
     panel.grid.minor = element_blank()
   )

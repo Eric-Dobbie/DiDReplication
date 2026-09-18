@@ -103,13 +103,9 @@ p <- ggplot(pd, aes(overall, label, color=grp)) +
   geom_point(size=3.4) +
   geom_text(aes(label=sprintf("%+.3f", overall)), vjust=-1, size=3, fontface="bold", show.legend=FALSE) +
   scale_color_manual(values=pal, name=NULL) +
-  labs(title="CS under alternative control groups and covariates",
-       subtitle="Overall ATT on P(fatal encounter), 95% CI. Covariates = the paper's 4 (pop, income, %white, %white officers).\nCS stays positive & insignificant across specs; stacked (741 clean controls) is precisely negative.",
-       x="Overall ATT (effect on probability of a fatal encounter)", y=NULL) +
-  theme_bw(base_size=12) +
-  theme(plot.title=element_text(face="bold", size=13),
-        plot.subtitle=element_text(size=8.5, color="grey30"),
-        legend.position="top", panel.grid.minor=element_blank(),
+  labs(x="Overall ATT (effect on probability of a fatal encounter)", y=NULL) +
+  theme_minimal(base_size=12) +
+  theme(legend.position="top", panel.grid.minor=element_blank(),
         axis.text.y=element_text(size=9.5))
 
 ggsave(file.path(FIG_DIR, "cs_variants_comparison.pdf"), p, width=9.5, height=5.5, device=cairo_pdf)

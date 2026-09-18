@@ -89,14 +89,10 @@ p <- ggplot(dat, aes(estimate, weight, color=spec, shape=spec)) +
   scale_color_manual(values=pal, name=NULL) +
   scale_shape_manual(values=shp, name=NULL) +
   scale_x_continuous(breaks=scales::pretty_breaks(9)) +
-  labs(title="Cohort-level estimates by control group and covariates (CS and SA)",
-       subtitle="One point per treated cohort; atoms rolled up to cohort by their weights. Green dotted line = stacked overall (per panel).\nCovariates = log.pop, log.med.inc, pct.white, pct.white.officers.imputed.",
-       x="Cohort-level estimate (effect on probability of a fatal encounter)",
+  labs(x="Cohort-level estimate (effect on probability of a fatal encounter)",
        y="Cohort aggregation weight") +
-  theme_bw(base_size=12) +
-  theme(plot.title=element_text(face="bold", size=13),
-        plot.subtitle=element_text(size=8.5, color="grey30"),
-        strip.text=element_text(face="bold", size=10.5),
+  theme_minimal(base_size=12) +
+  theme(strip.text=element_text(face="bold", size=10.5),
         strip.background=element_rect(fill="grey93"),
         legend.position="top", panel.grid.minor=element_blank())
 
