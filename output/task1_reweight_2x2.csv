@@ -1,0 +1,11 @@
+quantity,value,note
+CS_atoms__CS_simple,0.056013,restricted to common 11 cohorts (diagonal: restricted CS)
+CS_atoms__stacked_FWL,0.075263,
+stacked_atoms__CS_simple,-0.061138,
+stacked_atoms__stacked_FWL,-0.098915,restricted to common 11 cohorts (diagonal: stacked)
+CS_simple_unrestricted,0.044765,all 13 CS cohorts
+stacked_unrestricted,-0.098915,11 identified = common set
+gap_total,-0.154929,stacked_restr - CS_restr
+channel_weight,0.019250,sum (Wst-Wcs)*A_CS
+channel_atom,-0.117151,sum Wcs*(A_st-A_CS)
+channel_interaction,-0.057027,sum (Wst-Wcs)*(A_st-A_CS)
