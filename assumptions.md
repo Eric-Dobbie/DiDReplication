@@ -449,7 +449,10 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `task1_counterfactual_reweight.R` | CS-vs-stacked 2×2 atoms×weights + channel decomposition, from committed atoms. |
 | `cs_aggregation_sensitivity.R` | CS simple/group/dynamic/calendar aggregates + SEs + cohort weights (verified vs `aggte`). |
 | `cs_loo.R` | CS leave-one-cohort-out with multiplier-bootstrap SEs (drop 2002 flips sign). |
-| `task4_pretrend_weight.R` | per-cohort joint pre-trend test × aggregation weight, CS/SA/stacked → figure. |
+| `taskA1_wald_diagnostics.R` | pre-trend Wald diagnostics (rank, condition, scaling); found the `V_analytical` `/n` bug. |
+| `taskA2_base_period.R` | CS varying vs universal vs SA pre-estimates; CS-universal = SA exactly. |
+| `taskA3_atom_bootstrap.R` | paired agency-cluster bootstrap of per-cohort CS vs stacked atoms + atom channel (gates Task 3). |
+| `taskA4_pretrend_magnitude.R` | pre-trend figure rebuilt on coefficient magnitude + CI (replaces the retired p-value version). |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
 | `plot_weight_vs_beta_facets.R` | small-multiples, per-estimator free weight axis. |
@@ -469,7 +472,9 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `stacked_full15.{csv,tex}`, `stacked_full15_regtable.tex`,
 `cengiz_asym_window.csv`, `task1_{reweight_2x2,cohort_inputs}.csv`,
 `task2_{aggregation_sensitivity,cohort_weights}.csv`, `cs_loo_se.csv`,
-`task4_pretrend_weight.csv`.
+`taskA1_wald_diagnostics.csv`, `taskA2_base_period.csv`,
+`taskA3_atom_bootstrap.csv`, `taskA3_atom_channel_draws.csv`,
+`taskA4_pretrend_magnitude.csv`.
 
 ### `figures/`
 Eleven figures from the plotting scripts above, each `.png` + `.pdf`:
@@ -477,7 +482,8 @@ Eleven figures from the plotting scripts above, each `.png` + `.pdf`:
 `cohort_level_estimates`, `cohort_level_variants`, `calendar_and_event_time`,
 `cs_variants_comparison`, `cengiz_vs_pp_stacked`, `cengiz_control_groups`,
 `cengiz_window_sensitivity`, plus `cengiz_asym_window` (§11) and
-`pretrend_vs_weight` (Task 4.2, `RESULTS_remaining_runs.md`).
+`pretrend_magnitude` (Task A4, `RESULTS_verification_A.md`; replaces the retired
+`pretrend_vs_weight`).
 
 All use **`theme_minimal()` with no plot title, subtitle, or caption** (axis
 labels, legends, reference lines and in-panel annotations retained);

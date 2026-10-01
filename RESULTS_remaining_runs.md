@@ -65,20 +65,16 @@ CS: `R/cs_loo.R` → `output/cs_loo_se.csv`; stacked: `output/stacked_loo_both.c
 - Several cohorts have a single treated unit (flagged in `n_treated`): cluster-robust
   SEs are unreliable there.
 
-## Task 4.2 — Pre-trend × weight  ✅
-`R/task4_pretrend_weight.R` → `output/task4_pretrend_weight.csv`,
-`figures/pretrend_vs_weight.{pdf,png}` (x = cohort weight, y = per-cohort joint
-pre-trend p-value, one series per estimator, point size = treated units).
-
-Per-cohort joint Wald on each cohort's leads: CS from `att_gt` + analytical
-`V_analytical`; SA from `sunab` + cluster-robust vcov; stacked from
-`stacked_pretrends.csv`. **The heavily weighted CS atoms are well supported** — 2002
-(w 0.29, p 0.83) and 2009 (w 0.26, p 1.00) sit at the top. **The same cohorts under
-SA sit at the bottom** (2009 p≈0): identical point estimates (R5 equivalence) but
-few-treated-cluster cluster-robust inference flags pre-trends where CS's analytical
-vcov does not. Stacked's pre-trend rejections (2017, 2019) are low-weight and are the
-same few-cluster artifacts (§19). So "heavily weighted but poorly supported" appears
-for SA's 2009, not for CS.
+## Task 4.2 — Pre-trend × weight  ⚠️ SUPERSEDED (see `RESULTS_verification_A.md`)
+The original p-value figure (`pretrend_vs_weight`, `task4_pretrend_weight.*`) is
+**retired**. Verification (Tasks A1–A4) found its CS p-values were a `V_analytical`
+scaling artifact (used without `/n`, inflating the vcov 71×), and that the CS run
+used `base_period="varying"` — a different pre-treatment estimand from SA. The
+corrected analysis (`taskA4_pretrend_magnitude.R` → `figures/pretrend_magnitude.*`)
+plots pre-trend coefficient **magnitude with CI**, not p-values, and shows that
+pre-trend support is weakest exactly where aggregation weight is highest (2002,
+2009) — a power/magnitude statement, not the "CS supported, SA not" cross-estimator
+claim, which does not hold.
 
 ---
 
