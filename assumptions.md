@@ -446,6 +446,10 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `spec_grid.R` | 2×2×2 FE×covariate×weight grid reproducing the paper's stacked cols 3–4 → `.tex` (§8). |
 | `stacked_full15.R` | full 15-cohort stack (controls on all cohorts, no window) run "as described"; spec + standard regression tables → `.tex` (§8). |
 | `data_description.R` | descriptive panel summary (years, cities, cohorts, N) → `.tex`. |
+| `task1_counterfactual_reweight.R` | CS-vs-stacked 2×2 atoms×weights + channel decomposition, from committed atoms. |
+| `cs_aggregation_sensitivity.R` | CS simple/group/dynamic/calendar aggregates + SEs + cohort weights (verified vs `aggte`). |
+| `cs_loo.R` | CS leave-one-cohort-out with multiplier-bootstrap SEs (drop 2002 flips sign). |
+| `task4_pretrend_weight.R` | per-cohort joint pre-trend test × aggregation weight, CS/SA/stacked → figure. |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
 | `plot_weight_vs_beta_facets.R` | small-multiples, per-estimator free weight axis. |
@@ -463,14 +467,17 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `stack_composition.{csv,tex}`, `data_description.{csv,tex}`,
 `stacked_nevertreated.csv`, `decomp_table.tex`, `spec_grid.{csv,tex}`,
 `stacked_full15.{csv,tex}`, `stacked_full15_regtable.tex`,
-`cengiz_asym_window.csv`.
+`cengiz_asym_window.csv`, `task1_{reweight_2x2,cohort_inputs}.csv`,
+`task2_{aggregation_sensitivity,cohort_weights}.csv`, `cs_loo_se.csv`,
+`task4_pretrend_weight.csv`.
 
 ### `figures/`
-Ten figures from the plotting scripts above, each `.png` + `.pdf`:
+Eleven figures from the plotting scripts above, each `.png` + `.pdf`:
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
 `cohort_level_estimates`, `cohort_level_variants`, `calendar_and_event_time`,
 `cs_variants_comparison`, `cengiz_vs_pp_stacked`, `cengiz_control_groups`,
-`cengiz_window_sensitivity`, plus `cengiz_asym_window` (§11).
+`cengiz_window_sensitivity`, plus `cengiz_asym_window` (§11) and
+`pretrend_vs_weight` (Task 4.2, `RESULTS_remaining_runs.md`).
 
 All use **`theme_minimal()` with no plot title, subtitle, or caption** (axis
 labels, legends, reference lines and in-panel annotations retained);

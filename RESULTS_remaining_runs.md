@@ -1,26 +1,18 @@
 # Remaining-runs results (Tasks 1, 2, 4) — status
 
-**Environment note.** The session container was reset: the raw data (`dta.csv`,
-`stacked_fatal.csv`, both gitignored) and the R toolchain were wiped. Tasks that
-are **pure recombination of the committed atoms/weights** were completed from the
-committed CSVs (`output/atoms_long.csv`, `output/fwl_decomp_unweighted.csv`) with a
-stdlib computation and are reproduced by committed R scripts. Tasks that need a
-**re-fit** (standard errors from `aggte`, CS leave-one-out SEs, dynamic/calendar
-aggregates, the pre-trend figure, and Task 3) are **blocked pending re-upload of the
-replication data + an R rebuild**. Point estimates throughout are exact (CS's
-never-treated-control `ATT(g,t)` are independent across cohorts, and the stacked
-decomposition is committed).
+**Environment note.** After a container reset wiped the raw data and R, the data
+was re-uploaded and the R toolchain rebuilt (conda-forge: R 4.3.3, `did` 2.1.2,
+`fixest` 0.13.2, `lfe` 3.1.1). All tasks below are now run under R with real
+re-fits; Task 1's pure-recombination numbers reproduced exactly on re-run.
 
 Common cohort set (the 11 the stacked spec identifies, `w_s > 0`): **2002, 2004,
 2008, 2009, 2012, 2013, 2014, 2017, 2018, 2019, 2020**.
 
 ---
 
-## Task 1 — Counterfactual reweighting  ✅ complete
+## Task 1 — Counterfactual reweighting  ✅
 `R/task1_counterfactual_reweight.R` → `output/task1_reweight_2x2.csv`,
 `output/task1_cohort_inputs.csv`.
-
-**2×2 (restricted to the common 11 cohorts):**
 
 | Atoms | Weights | Estimate |
 |---|---|---|
@@ -29,82 +21,69 @@ Common cohort set (the 11 the stacked spec identifies, `w_s > 0`): **2002, 2004,
 | stacked | CS simple | −0.061 |
 | stacked | stacked FWL | **−0.099** |
 
-Diagonal check: stacked (restricted) = **−0.099** = unrestricted stacked (the
-stacked spec only identifies these 11, so restriction is a no-op for it). CS
-(restricted) = **+0.056** vs **+0.045** unrestricted (all 13 CS cohorts) — the
-restriction to the common set raises CS by +0.011, reported side by side rather
-than absorbed.
+Diagonal reproduces the known aggregates on the common set (stacked −0.099 exactly;
+CS +0.056 restricted vs +0.045 unrestricted — reported side by side). Gap (−0.155) =
+**atom channel −0.117** + weight channel +0.019 + interaction −0.057.
 
-**Gap decomposition** (stacked_restr − CS_restr = **−0.155**):
-
-| Channel | Value |
-|---|---|
-| weight channel  `Σ(W_st−W_cs)·A_cs` | **+0.019** |
-| atom channel    `Σ W_cs·(A_st−A_cs)` | **−0.117** |
-| interaction     `Σ(W_st−W_cs)(A_st−A_cs)` | **−0.057** |
-| sum | −0.155 ✓ |
-
-**Which channel dominates (one paragraph).** The disagreement between CS (+0.056)
-and stacked (−0.099) on the common cohort set is overwhelmingly an **atom-level**
-disagreement, not a weighting artifact. Holding weights fixed at CS's and swapping
-only the per-cohort effects (CS → stacked) moves the aggregate by **−0.117**, three-
-quarters of the total −0.155 gap; holding atoms fixed and swapping only the weights
-moves it by just **+0.019**. The interaction (−0.057) is itself large because the
-two estimators disagree *most* on exactly the cohorts whose weights also differ most
-(2002, 2017, 2018). The per-cohort inputs make the atom gap concrete: CS and stacked
-estimate different objects per cohort — e.g. 2002 is +0.222 under CS (41 never-
-treated clean controls) but +0.007 under stacked (within-treated, no clean
-controls); 2017 is +0.722 vs −0.059; 2018 is +0.230 vs −0.292. So the CS-vs-stacked
-disagreement cannot be reweighted away: it lives in the atoms.
+**Which channel dominates.** The CS-vs-stacked disagreement is overwhelmingly an
+**atom-level** disagreement, not a weighting artifact: swapping only the per-cohort
+effects (weights held at CS) moves the aggregate −0.117 (¾ of the gap); swapping only
+the weights moves it +0.019. CS and stacked estimate different objects per cohort
+(2002 +0.222 vs +0.007; 2017 +0.722 vs −0.059; 2018 +0.230 vs −0.292). The gap cannot
+be reweighted away — it lives in the atoms.
 
 ---
 
-## Task 2 — Aggregation-scheme sensitivity  ◐ partial (point estimates + weights; SEs blocked)
-`output/task2_cs_aggregation_partial.csv`. `simple` and `group` are exact from the
-committed CS atoms; **`dynamic`, `calendar`, and all SEs require re-fitting `aggte`**
-(blocked).
+## Task 2 — Aggregation-scheme sensitivity  ✅
+`R/cs_aggregation_sensitivity.R` → `output/task2_aggregation_sensitivity.csv`,
+`output/task2_cohort_weights.csv`. Cell weights reconstructed and verified against
+`aggte`'s own `overall.att` (|diff| ≤ 1e-17 for all four schemes).
 
-| Scheme | CS overall | 2002 weight | 2009 weight |
-|---|---|---|---|
-| simple (size × #post) | **+0.045** | 0.290 | 0.256 |
-| group (size only) | **+0.106** | 0.167 | 0.233 |
-| dynamic | *pending refit* | | |
-| calendar | *pending refit* | | |
+| scheme | overall | SE | w(2002) | w(2009) |
+|---|---|---|---|---|
+| simple | +0.045 | 0.065 | 0.290 | 0.256 |
+| group | +0.106 | 0.054 | 0.167 | 0.233 |
+| dynamic | +0.055 | 0.067 | 0.353 | 0.196 |
+| calendar | +0.049 | 0.055 | 0.353 | 0.196 |
 
-`simple` overweights early cohorts (2002 has 19 post periods → weight 0.29, the
-single largest); `group` shifts weight onto the noisy, large-positive late cohorts
-(2017 +0.72, 2018 +0.23, 2013 +0.30 each go from ~0.03 to 0.10), pushing CS from
-+0.045 to +0.106. **The CS sign does not flip between simple and group — both are
-positive.** The sign fragility is cohort-specific (2002), not scheme-specific (see
-Task 4.1), which is the sharper statement for the main text.
-
----
-
-## Task 4.1 — Leave-one-cohort-out  ✅ point estimates (CS SEs blocked)
-`output/task4_cs_loo.csv` (CS); `output/stacked_loo_both.csv` (stacked, committed).
-
-- **CS: dropping cohort 2002 flips the sign** (+0.045 → **−0.028**, Δ −0.072). No
-  other cohort flips it; dropping 2009 raises it most (+0.119). CS's positive
-  aggregate rests entirely on 2002.
-- **Stacked: no single cohort flips the sign** — the plain corrected-FE aggregate
-  stays in [−0.115, −0.082] across all leave-one-out runs (most influential: drop
-  2018 → −0.082, Δ +0.017; drop 2013 → −0.115). The stacked negative is robust where
-  the CS positive is not.
-
-## Task 4.2 — Pre-trend × weight joint plot  ⧗ blocked (figure)
-The stacked per-cohort pre-trend statistics are committed (`stacked_pretrends.csv`)
-and cohort weights are available, but the figure (weight on x, pre-trend stat on y,
-one series per estimator) and the joint CS/SA pre-trend tests need R/plotting and a
-re-fit for the CS/SA joint Wald statistics. Deferred with Task 2's SEs.
+All four CS aggregates are **positive and insignificant** (SE 0.054–0.067); the CS
+sign is robust to the aggregation scheme. `simple`/`dynamic`/`calendar` put the most
+weight on 2002 (0.29–0.35); `group` spreads weight onto the noisy large-positive late
+cohorts and rises to +0.106. The sign fragility is cohort-specific (2002), not
+scheme-specific (Task 4.1).
 
 ---
 
-## Blocked, pending data re-upload + R rebuild
-1. Task 2 SEs and the `dynamic`/`calendar` aggregates (`aggte` re-fit).
-2. CS leave-one-out SEs (att_gt re-fit per dropped cohort).
-3. Task 4.2 pre-trend × weight figure (plot + CS/SA joint pre-trend tests).
-4. **Task 3** boundary-asymmetry simulation — also gated on Task 1 review per the
-   brief, so held regardless.
+## Task 4.1 — Leave-one-cohort-out  ✅
+CS: `R/cs_loo.R` → `output/cs_loo_se.csv`; stacked: `output/stacked_loo_both.csv`.
 
-To unblock, re-upload the replication data (`dta.csv`, `stacked_fatal.csv`); the R
-environment will be rebuilt as before.
+- **CS: dropping 2002 flips the sign** (+0.045 → **−0.028**, SE 0.081). No other
+  cohort flips it; dropping 2009 raises it most (+0.119). CS's positive aggregate
+  rests entirely on 2002.
+- **Stacked: no cohort flips the sign** (plain corrected-FE stays in [−0.115, −0.082];
+  most influential drop 2018 → −0.082). Robust where CS is not.
+- Several cohorts have a single treated unit (flagged in `n_treated`): cluster-robust
+  SEs are unreliable there.
+
+## Task 4.2 — Pre-trend × weight  ✅
+`R/task4_pretrend_weight.R` → `output/task4_pretrend_weight.csv`,
+`figures/pretrend_vs_weight.{pdf,png}` (x = cohort weight, y = per-cohort joint
+pre-trend p-value, one series per estimator, point size = treated units).
+
+Per-cohort joint Wald on each cohort's leads: CS from `att_gt` + analytical
+`V_analytical`; SA from `sunab` + cluster-robust vcov; stacked from
+`stacked_pretrends.csv`. **The heavily weighted CS atoms are well supported** — 2002
+(w 0.29, p 0.83) and 2009 (w 0.26, p 1.00) sit at the top. **The same cohorts under
+SA sit at the bottom** (2009 p≈0): identical point estimates (R5 equivalence) but
+few-treated-cluster cluster-robust inference flags pre-trends where CS's analytical
+vcov does not. Stacked's pre-trend rejections (2017, 2019) are low-weight and are the
+same few-cluster artifacts (§19). So "heavily weighted but poorly supported" appears
+for SA's 2009, not for CS.
+
+---
+
+## Task 3 — held for review
+Per the brief, the boundary-asymmetry simulation waits until Task 1 is reviewed. Task
+1's headline (atom channel dominates the CS-vs-stacked gap) is the thing to check
+before the simulation design is fixed. The P&P adoption-timing gradient the brief asks
+for (slope of `beta_s` on `g`) will be computed as part of Task 3.
