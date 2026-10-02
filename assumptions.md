@@ -458,6 +458,10 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `taskB3B6_validation.R` | validates the Wald machinery (V=crossprod(IF)/n; corr vs bootstrap) and resolves n=71. |
 | `taskB4_bootstrap_vcov.R` | per-cohort pre-trend p: analytical vs multiplier-bootstrap vcov, both base periods. |
 | `taskB5_raw_means.R` | raw treated-vs-control outcome means for cohorts 2002, 2009 → figure. |
+| `design_sweep_core.R` | deterministic `design_weights(T,g,n_g,N_c)`: exact CS + stacked weights, closed-form, identification (`RESULTS_design_sweep.md`). |
+| `design_sweep_figureC.R` | sweep: share of weight on uncheckable cohorts (k/n_g>1), P&P located. |
+| `design_sweep_figureAB.R` | weight vs pre-period count by scheme (A); weight-vector agreement cor/L1 (B). |
+| `design_sweep_validation.R` | closed form V_s=N·T·p(1−p)q(1−q): exact under balance+common pool, degrades otherwise; P&P fit. |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
 | `plot_weight_vs_beta_facets.R` | small-multiples, per-estimator free weight axis. |
@@ -481,7 +485,9 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `taskA3_atom_bootstrap.csv`, `taskA3_atom_channel_draws.csv`,
 `taskA4_pretrend_magnitude.csv`, `taskB1_restrictions.csv`,
 `taskB2_{null_pvalues,size_by_cohort}.csv`, `taskB3B6_validation.txt`,
-`taskB4_bootstrap_vcov.csv`, `taskB5_raw_means.csv`.
+`taskB4_bootstrap_vcov.csv`, `taskB5_raw_means.csv`,
+`design_sweep_grid.csv`, `design_uncheckable_named.csv`,
+`design_sweep_corL1.csv`, `design_validation_pp.csv`.
 
 ### `figures/`
 Eleven figures from the plotting scripts above, each `.png` + `.pdf`:
@@ -491,7 +497,9 @@ Eleven figures from the plotting scripts above, each `.png` + `.pdf`:
 `cengiz_window_sensitivity`, plus `cengiz_asym_window` (§11) and
 `pretrend_magnitude` (Task A4, `RESULTS_verification_A.md`; replaces the retired
 `pretrend_vs_weight`), `taskB2_null_pvalue_hist` and `taskB5_raw_means`
-(verification B, `RESULTS_verification_B.md`).
+(verification B, `RESULTS_verification_B.md`), and `design_uncheckable_share`,
+`design_weight_vs_pre`, `design_weight_agreement` (deterministic design sweep,
+`RESULTS_design_sweep.md`).
 
 All use **`theme_minimal()` with no plot title, subtitle, or caption** (axis
 labels, legends, reference lines and in-panel annotations retained);
