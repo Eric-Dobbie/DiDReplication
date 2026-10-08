@@ -77,3 +77,67 @@ common control pool, `resid_{it} = (a_i − p̄)(b_t − q̄)`, so
 `single_treated`, `collinear:no_pre`, `collinear:FE`, `no_contrast`) and sets the
 stacked weight to NA with the reason where `V_s = 0`; the grid records the count of
 unidentified cohorts per config. No outcome variable appears anywhere in this task.
+
+---
+
+## Weight vs. checkability (MDE), swept over geometry (`design_sweep_checkability.R`)
+
+The same weight-vs-checkability comparison as `weight_checkability.R` / Figure C,
+now run across the design space. Deterministic: no outcomes, no DGP. Per cohort,
+per scheme, per config we compute the aggregation weight and the analytic
+**minimum detectable pre-trend (MDE)** at 80% power / α=0.05, expressed in units
+of σ (the outcome noise SD): `MDE/σ = sqrt(λ*(k)/[a'(I+11')⁻¹a]) · sqrt(1/n_g + 1/n_c)`,
+a pure function of the geometry (`k`, `n_g`, `n_c`) — σ cancels, so no outcome is
+needed. Gates: `no_pre` (k<1), `size` (k/n_g>1, the B1/B2 rank gate). "Resolvable"
+= checkable **and** `MDE/σ ≤ 0.303` (= a P&P-scale |β|=0.10 pre-trend at σ=0.3297).
+**Control pools are scheme-specific and realistic**, as in the data: CS family + SA
+use the never-treated pool (41); stacked uses the not-yet-treated pool (741). The
+sweep varies geometry (T∈{15,21,30}, placement, sizes) — 1,872 configs, identical
+universe to Figure C. Output `MDE/σ` validated against the committed
+`weight_checkability_cohorts.csv` to 4e-5 (uniroot tol).
+
+**The control pool, not the geometry, gates CS/SA.** Under the never-treated pool
+(n_c=41) the term `sqrt(1/n_c)` alone is 0.156, so `MDE/σ ≥ C(k)·0.156 ≥ 0.62` for
+every k — above the 0.303 resolvable line. **No panel geometry in the sweep makes a
+CS/SA pre-trend resolvable at a P&P-scale effect**: grid median resolvable share = 0
+for simple/group/dynamic/calendar, and P&P's 0.00 is the generic case, not a quirk.
+The binding constraint is the small never-treated pool, and it cannot be fixed by
+re-timing or re-sizing cohorts.
+
+**Only the stacked estimator's large pool can resolve anything, and P&P sits at the
+favorable extreme.** With n_c=741 the pool floor drops to `sqrt(1/741)=0.037`, so a
+large mid-panel cohort can clear 0.303. Across the sweep the median stacked
+resolvable share is still 0 (most geometries load high-k cohorts that fail the size
+gate), but **P&P's stacked resolvable share is 0.369 — the ~98th percentile**, and
+its weight-weighted median `MDE/σ` is 0.178 — the **0th percentile (the single most
+checkable design in the entire sweep)**. Both are driven by one cohort, 2009
+(n_g=8, k=8, pool 741). Even so, **63% of stacked weight still lands on uncheckable
+cohorts.**
+
+| scheme | grid median resolvable | grid median uncheckable | grid median wtd-med MDE/σ | **P&P** resolvable | **P&P** uncheckable | **P&P** wtd-med MDE/σ |
+|---|---|---|---|---|---|---|
+| simple   | 0.000 | 0.605 | 1.313 | 0.000 | 0.710 | 1.877 |
+| group    | 0.000 | 0.722 | 1.040 | 0.000 | 0.833 | 1.877 |
+| dynamic  | 0.000 | 0.552 | 1.313 | 0.000 | 0.647 | 1.877 |
+| calendar | 0.000 | 0.552 | 1.313 | 0.000 | 0.647 | 1.877 |
+| stacked  | 0.000 | 0.733 | 0.854 | **0.369** | 0.631 | **0.178** |
+
+P&P percentiles (per scheme): resolvable share — CS/SA ~98th (tied at the 0 mass
+point, i.e. generic); stacked 98th (exceptional). wtd-med MDE/σ — CS/SA 70–82nd
+(P&P's checkable cohorts are *harder* to check than the median design, since its one
+checkable CS cohort is the small 2002); stacked 0th (most checkable in the sweep).
+
+**Figures.** `design_checkability_scatter.*` — the comparison itself, pooled across
+all grid geometries (weight vs MDE/σ, by scheme), P&P cohorts overlaid: every CS/SA
+geometry sits right of the 0.303 line, P&P's stacked 2009 is the lone point left of
+it. `design_checkability_share.*` — distribution of the resolvable-weight share
+(spike at 0 everywhere; P&P stacked alone in the right tail at 0.37).
+`design_checkability_wmed.*` — distribution of weight-weighted median MDE/σ (P&P CS
+in the right/hard tail, P&P stacked at the extreme left/easy edge).
+
+**Abstractions.** The balanced grid gives every cell a count and one `n_g` per
+cohort shared across schemes, so it cannot represent two real-data wrinkles carried
+exactly in the P&P anchor (read from `weight_checkability_cohorts.csv`): Memphis
+making stacked's 2009 n_g=8 vs CS's 7, and the 2002 stack having no clean controls.
+Outputs: `output/design_checkability_grid.csv`, `output/design_checkability_cohorts_grid.csv`,
+`output/tab_design_checkability.{csv,tex}`.
