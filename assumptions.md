@@ -462,6 +462,7 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `design_sweep_figureC.R` | sweep: share of weight on uncheckable cohorts (k/n_g>1), P&P located. |
 | `design_sweep_figureAB.R` | weight vs pre-period count by scheme (A); weight-vector agreement cor/L1 (B). |
 | `design_sweep_validation.R` | closed form V_s=N·T·p(1−p)q(1−q): exact under balance+common pool, degrades otherwise; P&P fit. |
+| `weight_checkability.R` | per-cohort weight vs analytic MDE (gates: no_pre/no_controls/size) → `fig_weight_checkability.*`, summary table. |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
 | `plot_weight_vs_beta_facets.R` | small-multiples, per-estimator free weight axis. |
