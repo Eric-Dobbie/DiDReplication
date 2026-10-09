@@ -462,8 +462,8 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `design_sweep_figureC.R` | sweep: share of weight on uncheckable cohorts (k/n_g>1), P&P located. |
 | `design_sweep_figureAB.R` | weight vs pre-period count by scheme (A); weight-vector agreement cor/L1 (B). |
 | `design_sweep_validation.R` | closed form V_s=N·T·p(1−p)q(1−q): exact under balance+common pool, degrades otherwise; P&P fit. |
-| `weight_checkability.R` | per-cohort weight vs analytic MDE (gates: no_pre/no_controls/size) → `fig_weight_checkability.*`, summary table. |
-| `design_sweep_checkability.R` | weight-vs-MDE comparison swept over geometry (1,872 configs, scheme-specific pools 41/741); CS/SA never resolvable (pool floor), P&P stacked at favorable extreme (2009) → `design_checkability_{scatter,share,wmed}.*`. |
+| `weight_checkability.R` | per-cohort weight vs analytic LEVEL MDE (jump + slope→mean-post-bias) vs \|effect\|; gates no_pre/no_controls/size → `fig_weight_checkability{,_bias}.*`. No cohort resolvable (2002, 2009 at 3–14× effect). |
+| `design_sweep_checkability.R` | weight-vs-MDE swept over geometry (2,016 configs, geometry-derived pools; level jump MDE). Nothing resolvable in any geometry; binding reason overwhelmingly the size gate; P&P at 42–54th pct → `design_checkability_{wmed,scatter}.*`. Supersedes the 55ddc68 version (units/pools/headline fixed). |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
 | `plot_weight_vs_beta_facets.R` | small-multiples, per-estimator free weight axis. |

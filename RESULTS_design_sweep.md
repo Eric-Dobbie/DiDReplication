@@ -82,6 +82,13 @@ unidentified cohorts per config. No outcome variable appears anywhere in this ta
 
 ## Weight vs. checkability (MDE), swept over geometry (`design_sweep_checkability.R`)
 
+> **SUPERSEDED (commit 55ddc68).** This section has three defects, corrected in the
+> follow-up revision: (1) it compared a per-period *slope* MDE against a *level*
+> threshold (0.303); (2) its control pools were hard-coded at 41/741 rather than
+> derived from each configuration's geometry; (3) the claim "√(1/41) forces MDE/σ ≥
+> 0.62 for every k" and the "resolvable share" headline follow from those two
+> errors. See the revised section below for the corrected analysis.
+
 The same weight-vs-checkability comparison as `weight_checkability.R` / Figure C,
 now run across the design space. Deterministic: no outcomes, no DGP. Per cohort,
 per scheme, per config we compute the aggregation weight and the analytic
@@ -141,3 +148,82 @@ exactly in the P&P anchor (read from `weight_checkability_cohorts.csv`): Memphis
 making stacked's 2009 n_g=8 vs CS's 7, and the 2002 stack having no clean controls.
 Outputs: `output/design_checkability_grid.csv`, `output/design_checkability_cohorts_grid.csv`,
 `output/tab_design_checkability.{csv,tex}`.
+
+---
+
+## Weight vs. checkability (MDE), swept over geometry — REVISED (supersedes the section above)
+
+Corrects the three defects flagged against 55ddc68. Script `design_sweep_checkability.R`,
+2,016 configs (216 geometry configs × never-treated count N_c ∈ {10,41,120}, plus an
+1,800-config random-placement arm at N_c=41). Deterministic; no outcomes.
+
+**Fix 1 — units (level-on-level).** The treatment effect is a level, so the MDE is now
+a level. We report (a) the **jump MDE** — the smallest detectable *uniform level*
+pre-trend, `MDE_jump/σ = √(λ*(k)·(k+1)/k)·√(1/n_g+1/n_c)` — as the headline level
+measure, and (b) the slope MDE converted to an implied mean post bias
+(`slope·h`, `h=(T−gp)/2`). The earlier "trend MDE" was a per-period *slope*; comparing it
+to the level threshold is what produced the spurious "2009 is resolvable". **Under the
+correct level comparison nothing changes sign except that conclusion:** stacked 2009's
+detectable pre-trend is **jump 1.56σ / trend-bias 1.04σ** (geometry pool) — ≈ 4.9× / 3.3×
+the |β|=0.10 effect — not 0.18σ. `weight_checkability.R` was updated the same way and its
+CSV/table/figure regenerated; its stacked-2009 row now reads jump MDE 0.482 (1.46σ,
+4.87× |eff|), trend-bias 0.322 (0.98σ, 3.26× |eff|).
+
+**Is anything resolvable after fix 1? No.** Resolvable (MDE_jump/σ ≤ 0.303) requires
+`√(1/n_g+1/n_c) ≤ 0.303/C(k)`; even at k=1, `C(1)=3.96`, so it needs n_g ≈ 170. No swept
+cohort (max n_g=8) comes close. Resolvable share is **0 in every scheme, every geometry,
+and for P&P** — so it is dropped as a headline (fix 7).
+
+**Fix 7 — headline is the weight-weighted MDE distribution.** Across the sweep the
+weighted-median jump MDE sits at **1.5–3σ** (≈ 5–9× the effect) for every scheme. P&P is
+**typical, not exotic: 42nd–54th percentile** (wtd-median 1.84–1.88σ vs grid-median
+1.86–1.88σ). See `design_checkability_wmed.*`; `design_checkability_scatter.*` shows every
+cohort — grid and P&P — right of the resolvable line.
+
+**Fix 2 — no pool-floor claim; binding reasons tabulated instead.** For each cohort the
+*binding* reason is one of `no_pre` (k<1), `size` (k/n_g>1), `underpowered` (checkable but
+jump MDE>0.303), `resolvable`. Weight share by reason (`design_checkability_binding.csv`):
+
+| scheme | P&P no_pre | P&P size | P&P underpowered | P&P resolvable | grid-median size |
+|---|---|---|---|---|---|
+| simple   | 0.06 | 0.65 | 0.29 | 0 | 0.40 |
+| group    | 0.03 | 0.80 | 0.17 | 0 | 0.56 |
+| dynamic  | 0.12 | 0.53 | 0.35 | 0 | 0.31 |
+| calendar | 0.12 | 0.53 | 0.35 | 0 | 0.31 |
+| stacked  | 0.01 | 0.90 | 0.09 | 0 | 0.68 |
+
+The binding constraint is overwhelmingly the **size** gate (k/n_g>1: too many pre-leads
+relative to treated units), not a control-pool floor; the remaining checkable weight is
+**underpowered**, never resolvable.
+
+**Fix 4 — pools from geometry, not 41/741.** CS family + SA use the never-treated count
+N_c; stacked/CS-NYT use N_c + not-yet-treated at g. P&P's geometry-derived stacked pool
+runs **70 (2001) down to 41 (2020)** — e.g. 2009 → 54 — far below the committed 741,
+because the 741 folds in ~700 *always*-treated (always-no-requirement) units that are not
+valid not-yet-treated controls. Using the honest smaller pool makes 2009 slightly *less*
+checkable (jump 1.56σ vs 1.46σ at 741), reinforcing the conclusion.
+
+**Fix 3 — gate sensitivity (k/n_g ≤ 1 vs < 1).** The boundary case is k/n_g = 1 exactly.
+In the grid, 80 of 2,430 cohort-cells (3.3%) sit on it. For P&P the single flip is
+**stacked 2009** (k=8, n_g=8 → 1.00): *checkable* under ≤1, *uncheckable* under <1; all
+other P&P cohorts are off the boundary. **Memphis excluded** (its double 2004/2009 switch
+dropped, n_g→7): k/n_g = 8/7 > 1, so 2009 fails the size gate outright under either
+convention. So 2009's checkability hinges entirely on one agency counted in two stacks and
+on a weak-inequality gate.
+
+**Fix 5 — P&P anchor via the same grid functions** (its timing vector + CS cohort sizes +
+N_c=41), so it is comparable and placed in the distribution with a percentile. The
+committed real-data point (741 pool) appears only as a separate reference marker, with no
+percentile.
+
+**Fix 6 — dynamic vs calendar.** Not a bug: `did::aggte` places **identical weight on each
+cohort** under dynamic and calendar (confirmed independently by numerically differentiating
+`overall.att` w.r.t. each att(g,t) atom — cohort marginals match to 3e-13, reproducing
+`task2_cohort_weights.csv`). They diverge only in *within-cohort, across-period* atom
+weights (e.g. 2009's 2009 vs 2020 post-years get 0.012/0.021 under dynamic, reversed under
+calendar), so the overall ATTs differ (dynamic 0.0549, calendar 0.0486) while the cohort
+weights do not. In a balanced panel the two coincide even at the atom level.
+
+Outputs: `output/design_checkability_grid.csv`, `output/design_checkability_cohorts_grid.csv`,
+`output/design_checkability_binding.csv`, `output/tab_design_checkability.{csv,tex}`,
+`figures/design_checkability_{wmed,scatter}.*`.
