@@ -77,33 +77,20 @@ cat(sprintf("VERIFY own+inherited = gap_0 exactly: max|own+inh - gap0| = %.2e\n"
     max(abs(D1$own_block + D1$inherited_0 - D1$gap_0))))
 
 # Liu (2025) Props 2.1/2.2 weights  w_k = N_k / (sum_{j>=k} N_j + N_inf)
-liu_w <- sapply(seq_along(cohorts), function(i){ k<-cohorts[i]; N_k[i] / (sum(N_k[cohorts>=k]) + N_inf) })
-names(liu_w) <- cohorts
-LIU <- data.frame(adjustment_cohort=cohorts, N_k=as.integer(N_k),
-  denom=sapply(cohorts, function(k) sum(N_k[cohorts>=k])+N_inf), weight=round(liu_w,5), row.names=NULL)
-write.csv(LIU, file.path(OUT,"d6_liu_weights.csv"), row.names=FALSE)
-cat("\nLiu Props 2.1/2.2 adjustment-cohort weights  N_k/(sum_{j>=k}N_j + N_inf):  [reconstructed]\n")
-print(LIU, row.names=FALSE)
+# NOTE (round-5/cleanup): the Liu Props 2.1/2.2 weights N_k/(sum_{j>=k}N_j + N_inf) are a
+# POPULATION BIAS decomposition (E[tau_hat]-tau), NOT an attribution of the finite-sample
+# estimate gap tau_imp - tau_CS-NYT. Round 5 shows the s=1 gap is fully the Lemma-1 block
+# bias (no inherited term), so these weights play no role here. The d6_liu_weights.csv
+# output was removed to avoid implying otherwise; the block below is left commented out.
+# liu_w <- sapply(seq_along(cohorts), function(i){ k<-cohorts[i]; N_k[i] / (sum(N_k[cohorts>=k]) + N_inf) })
+# LIU <- data.frame(adjustment_cohort=cohorts, N_k=as.integer(N_k),
+#   denom=sapply(cohorts, function(k) sum(N_k[cohorts>=k])+N_inf), weight=round(liu_w,5), row.names=NULL)
+# write.csv(LIU, file.path(OUT,"d6_liu_weights.csv"), row.names=FALSE)
 
-# MAIN gap figure: own block bias + inherited, stacked, per cohort (s=1)
-long <- pivot_longer(D1[,c("cohort","own_block","inherited_0")], cols=c("own_block","inherited_0"),
-                     names_to="component", values_to="value")
-long$component <- factor(long$component, levels=c("own_block","inherited_0"),
-                         labels=c("own last-pre block bias","inherited (adjustment cohorts)"))
-pg <- ggplot(long, aes(factor(cohort), value, fill=component)) +
-  geom_col() +
-  geom_point(data=D1, aes(factor(cohort), gap_0), inherit.aes=FALSE, shape=18, size=2.6, color="black") +
-  geom_hline(yintercept=0, color="grey60") +
-  scale_fill_manual(values=c("own last-pre block bias"="#0072B2","inherited (adjustment cohorts)"="#E69F00"), name=NULL) +
-  labs(x="cohort", y=expression(hat(Delta)^Imp [g*",0"]*"   (imputation - CS-NYT at event time 0)"),
-       title="CS-imputation gap at s=1: own block bias + inherited adjustment-cohort term",
-       subtitle="diamond = total gap tau_imp(g,g) - tau_CS-NYT(g,g); 2001 = 0 by construction (single pre-period)",
-       caption="Inherited term is attributed across later (adjustment) cohorts by the Liu (2025) weights N_k/(sum_{j>=k}N_j+N_inf); see d6_liu_weights.csv. Total is exact.") +
-  theme_minimal(base_size=12) + theme(panel.grid.minor=element_blank(), legend.position="top",
-    plot.caption=element_text(size=7, hjust=0, color="grey40"))
-ggsave(file.path(FIG,"d6_gap_decomposition.pdf"), pg, width=9, height=5, device=cairo_pdf)
-ggsave(file.path(FIG,"d6_gap_decomposition.png"), pg, width=9, height=5, dpi=200)
-file.copy(file.path(FIG,"d6_gap_decomposition.png"), file.path(OUT,"d6_gap_decomposition.png"), overwrite=TRUE)
+# The round-4 "own block bias + inherited adjustment-cohort" gap figure is SUPERSEDED by
+# d6_round5.R, which shows (via Lemma 1's pre-average baseline) that the s=1 gap is fully the
+# block bias with zero inheritance/imbalance. The figure d6_gap_decomposition.* is produced
+# by d6_round5.R; d6_round4.R no longer writes it (it only emits d6_gap_identity_s1.csv).
 
 # move round-3 linear-slope plot to appendix name (if present)
 for (ext in c("pdf","png")){ old<-file.path(FIG,paste0("d6_gap_predicted_vs_actual.",ext))
@@ -231,5 +218,5 @@ for (g in c(2009,2013)){ n_g<-length(unique(dw$agency.id[dw$gname==g]))
 RI <- do.call(rbind, ri_rows); write.csv(RI, file.path(OUT,"d6_ri_sizematched.csv"), row.names=FALSE)
 print(RI, row.names=FALSE)
 
-cat("\nWrote d6_gap_identity_s1.csv, d6_liu_weights.csv, d6_gap_decomposition.*, d6_mde_wcr.csv,\n")
+cat("\nWrote d6_gap_identity_s1.csv, d6_mde_wcr.csv,\n")
 cat("  fig_weight_checkability_d6_v2_wcrmde.*, d6_ri_diagnostics.csv, d6_ri_sizematched.csv\n")

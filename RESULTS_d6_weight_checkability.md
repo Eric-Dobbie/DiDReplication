@@ -230,7 +230,7 @@ New outputs: `d6_pretests_2009_2013_robust.csv`, `d6_gap_predicted_vs_actual.csv
 ## Round 4 (items 1–3)
 
 **1. Exact CS–imputation gap at s=1 (event time 0) + own/inherited decomposition.**
-`d6_gap_identity_s1.csv`, `d6_liu_weights.csv`, main figure `d6_gap_decomposition.*`.
+`d6_gap_identity_s1.csv`, main figure `d6_gap_decomposition.*`.
 Δ̂^Imp_{g,0} := τ̂_imp(g,g) − τ̂_CS-NYT(g,g) (imputation FE counterfactual vs Callaway–
 Sant'Anna with not-yet-treated controls, varying base = g−1).
 
@@ -246,12 +246,13 @@ Sant'Anna with not-yet-treated controls, varying base = g−1).
   adjustment-cohort term (imputation's γ̂ being pooled over all untreated obs rather than
   cohort g's initial control group) is small everywhere — e.g. 2017: own −0.681 vs
   inherited −0.046; 2002: own −0.234 vs inherited −0.016; |inherited| ≤ 6% of the gap.
-- The Liu (2025) Props 2.1/2.2 weights `N_k/(Σ_{j≥k}N_j + N_∞)` are constructed from cohort
-  sizes (`d6_liu_weights.csv`, e.g. 2009 → 0.121, 2002 → 0.063) as the theoretical
-  attribution of the inherited term across later (adjustment) cohorts. **Flag:** Liu (2025)
-  is not available in this environment, so the total decomposition is exact by construction
-  while the per-cohort inherited *attribution* follows the stated formula as a
-  reconstruction — not independently verified against the paper.
+- **Correction (round-5 / cleanup):** round 4 described `N_k/(Σ_{j≥k}N_j + N_∞)` as the
+  attribution of the finite-sample *estimate* gap across cohorts — that is **wrong**. Those
+  are Liu Props 2.1/2.2 weights in the **population bias decomposition** of the imputation
+  estimator (how `E[τ̂] − τ` loads on cohorts under a DGP), not a decomposition of the
+  observed τ̂_imp − τ̂_CS-NYT. Round 5 shows the s=1 estimate gap is fully the Lemma-1 block
+  bias with no inherited term, so these weights play no role here; the file that tabulated
+  them (`d6_liu_weights.csv`) has been **removed** to avoid implying otherwise.
 - The round-3 linear-slope predicted-vs-actual plot is moved to the appendix
   (`d6_appendix_gap_linear_slope.*`); this block-bias decomposition is the main gap figure.
 
@@ -295,9 +296,10 @@ the never-treated pool. WCR (resampling the actual treated clusters) does not re
 (against a calmer, higher-N never-treated null) does. Both are reported; neither is declared
 correct here.
 
-New outputs: `d6_gap_identity_s1.csv`, `d6_liu_weights.csv`, `d6_gap_decomposition.*`,
+New outputs: `d6_gap_identity_s1.csv`, `d6_gap_decomposition.*`,
 `d6_mde_wcr.csv`, `fig_weight_checkability_d6_v2_wcrmde.*`, `d6_ri_diagnostics.csv`,
-`d6_ri_sizematched.csv`, `d6_appendix_gap_linear_slope.*`.
+`d6_ri_sizematched.csv`, `d6_appendix_gap_linear_slope.*`. (`d6_liu_weights.csv` was removed
+in cleanup — see round 5.)
 
 ---
 
@@ -314,18 +316,25 @@ and verifies it reproduces the FE gap exactly.
 simple means, C = never-treated ∪ {cohorts g′>g}, unit-equal weighting, independent of the
 stage-1 fit.
 
+- **Scope: this equivalence is an s=1 (first treated period) result — Liu Lemma 1 only.**
+  "imputation = simple-means block DiD" holds at event time 0 because the imputed Y(0) for
+  period g uses only genuinely-untreated pre-period data. For s > 1 it does **not** carry
+  over: BJS/imputation builds later counterfactuals sequentially and the horizon-s
+  prediction reuses previously *imputed* values, so τ̂_imp(g,g+s) is no longer a clean
+  simple-means long difference. Everything below is about s=1.
 - The droppers sample is **already fully balanced** (781/781 agencies have complete
-  2000–2020 fatal-encounters outcomes), so the FE imputation **is** the simple-means
-  long-difference DiD. Δ̂^Imp **equals the FE gap_s1 to 1e-10 on both** the full droppers
-  sample (max |remainder| = 0.0000) **and** the balanced subpanel (max 1.2e-10). Lemma 1
-  verified; the imbalance remainder is **zero** (there is no imbalance to attribute).
+  2000–2020 fatal-encounters outcomes), so **at s=1** the FE imputation **is** the
+  simple-means long-difference DiD. Δ̂^Imp **equals the FE gap_s1 to 1e-10 on both** the full
+  droppers sample (max |remainder| = 0.0000) **and** the balanced subpanel (max 1.2e-10).
+  Lemma 1 verified; the imbalance remainder is **zero** (there is no imbalance to attribute).
 - **This corrects round 4.** The round-4 "inherited adjustment-cohort term" (≤6% of the
   gap) was **not inheritance** — it was an artifact of using the last-pre-period *FE
   residual* as the baseline instead of Lemma 1's pre-period *average*. With the correct
   pre-average baseline, **the s=1 gap is 100% the Lemma-1 block bias**; there is no
   inherited term and (on this balanced panel) no imbalance. The figure is relabeled
-  accordingly (blue = Δ̂^Imp; orange = imbalance ≈ 0), and the Liu N_k/(…) weights are no
-  longer needed to explain the s=1 gap.
+  accordingly (blue = Δ̂^Imp; orange = imbalance ≈ 0). The Liu Props 2.1/2.2 `N_k/(…)`
+  weights are a **population bias** decomposition (`E[τ̂]−τ`), not an attribution of the
+  observed estimate gap, so they play no role here; `d6_liu_weights.csv` was removed.
 
 **2. Contribution table.** `d6_gap_contributions.csv`. Contribution_g = w_g ·
 (τ̂_imp,g − τ̂_CS-NYT,g), cohort-average over post-periods, at common (imputation = CS
@@ -380,3 +389,37 @@ adjudicated.
 New outputs: `d6_lemma1_full.csv`, `d6_lemma1_balanced.csv`, `d6_gap_contributions.csv`,
 `d6_untestable_ncluster.csv`, `fig_weight_checkability_d6_v2_ncluster.*`,
 `d6_ri_meanmatched.csv`, and the relabeled `d6_gap_decomposition.*`.
+
+---
+
+## Cleanup (post round 5, no new estimation)
+
+**1. Scope of "imputation = simple-means block DiD".** Added to round 5: this holds at **s=1
+only** (Liu Lemma 1). For s>1 the BJS/imputation counterfactual is built sequentially and
+reuses previously imputed values, so τ̂_imp(g,g+s) is not a clean simple-means long
+difference.
+
+**2. Liu weights relabeled/removed.** `N_k/(Σ_{j≥k}N_j+N_∞)` are Liu Props 2.1/2.2
+**population bias-decomposition** weights (how `E[τ̂]−τ` loads on cohorts under a DGP), **not**
+an attribution of the finite-sample estimate gap τ̂_imp−τ̂_CS-NYT. The round-4 text that
+implied otherwise is corrected above, and `d6_liu_weights.csv` is removed (the generating
+block in `d6_round4.R` is commented out; the round-4 gap figure, superseded, is no longer
+written by that script).
+
+**3. Joint pre-test rank is correct (one period already dropped).** Liu block biases sum to
+zero over pre-periods, so the pre-period VCV has rank pre_g−1. The round-2/3 joint test uses
+an event-study with reference period g−1 (`i(year, D, ref=g-1)` on pre-period data), which
+**already drops one period**: for 2009 it tests the 8 coefficients for 2000–2007 (pre_g−1=8),
+VCV rank 8/8; for 2013 it tests 12 coefficients for 2000–2011 (pre_g−1=12), VCV rank 12/12.
+`wald(...)$df1` equals pre_g−1 in both cases and no generalized inverse is triggered, so the
+test is correctly specified — the CR1/WCR/RI joint p-values in rounds 3–4 stand and need no
+rerun.
+
+**4. Footnote (Liu §2.5) — imputation pre/post coefficients on a shared axis.** Where
+imputation event-time coefficients are shown pre and post on one axis, note: a pre-period
+block bias includes its own period's outcome Y_t in the baseline it is differenced against
+(the imputed Y(0) is fit on the pre-periods themselves), so pre- and post-period coefficients
+are **not** on a common "untreated-counterfactual" footing and should not be read as a single
+continuous event-study path. No D6 figure plots imputation pre/post event-time coefficients
+on a shared axis (the D6 panels plot weight vs. checkability, and the gap figure is at s=1
+only); this footnote is recorded for any such plot added later or elsewhere in the project.
