@@ -285,9 +285,11 @@ make_fig <- function(sub, file, xvar, xlab, title, width=12){
     scale_fill_manual(values=c(`TRUE`="#0072B2", `FALSE`="#D55E00"), name="testable") +
     scale_size_area(max_size=8, name=expression(n[g])) +
     facet_wrap(~estimator, scales="free_y", nrow=1) +
-    labs(x=xlab, y="cohort aggregation weight", title=title) +
+    labs(x=xlab, y="cohort aggregation weight", title=title,
+         caption="Panel B2 (Cengiz +/-4): only cohorts 2004-2016 have a full +/-4 window in 2000-2020; cohorts with pre_g < 4 (2001-2003) are EXCLUDED by the window, not down-weighted to zero.") +
     theme_minimal(base_size=11) + theme(legend.position="right", panel.grid.minor=element_blank(),
-      strip.text=element_text(size=8, lineheight=1.05))
+      strip.text=element_text(size=8, lineheight=1.05),
+      plot.caption=element_text(size=7, hjust=0, color="grey40"))
   if (xvar=="mde_g"){
     g <- g + scale_x_log10() +
       annotate("text", x=sqrt(strip_lo*strip_hi), y=Inf, label="not testable", angle=90, vjust=1.1, hjust=1, size=2.6, color="grey35")

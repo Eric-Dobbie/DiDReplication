@@ -167,3 +167,60 @@ weight that isn't on untestable cohorts sits on cohorts that are themselves bord
 
 New/updated outputs: `d6_bridge_cs_imputation.csv`, `d6_pretests_2009_2013.csv`; the table
 and all three figures now carry the fourth (Cengiz) panel.
+
+---
+
+## Round 3 (items 1–3)
+
+**1. Robust inference for the 2009/2013 pre-tests — CR1 vs restricted wild cluster
+bootstrap (Webb, B=999 slope / 499 joint) vs randomization inference over never-treated
+placebo cohorts (B=999).** `d6_pretests_2009_2013_robust.csv`. (fwildclusterboot is not
+installable here; WCR is implemented by hand — restricted bootstrap-t for the slope,
+restricted Wald bootstrap for the joint test. Cengiz ≡ CS, both never-treated.)
+
+| cohort | comparison | slope | slope CR1 | slope WCR | slope RI | joint CR1 | joint WCR | joint RI |
+|---|---|---|---|---|---|---|---|---|
+| 2009 | CS/Cengiz (never) | −0.006 | 0.71 | 0.71 | 0.74 | 0.00 | 0.31 | 0.006 |
+| 2009 | stacked (No-Change) | −0.018 | 0.18 | 0.24 | 0.33 | 0.00 | 0.50 | 0.003 |
+| 2009 | imputation (never+not-yet) | −0.005 | 0.72 | 0.70 | 0.74 | 0.00 | 0.19 | 0.002 |
+| 2013 | CS/Cengiz (never) | −0.023 | 0.019 | 0.092 | 0.131 | 0.00 | 0.54 | 0.001 |
+| 2013 | stacked (No-Change) | −0.021 | 0.014 | 0.125 | 0.160 | 0.00 | 0.57 | 0.001 |
+| 2013 | imputation (never+not-yet) | −0.021 | 0.026 | 0.105 | 0.150 | 0.00 | 0.55 | 0.001 |
+
+- **The CR1 joint rejection is confirmed to be an over-rejection artifact.** CR1 gives
+  joint p = 0 everywhere; the restricted wild cluster bootstrap gives **0.19–0.57 (no
+  rejection)** for all six. This is precisely the B-chain finding (joint Wald over-rejects
+  when restrictions ≫ treated clusters), now shown directly on these cohorts.
+- **2013's "significant" slope does not survive either.** CR1 p = 0.014–0.026 rises to
+  **WCR 0.09–0.13 and RI 0.13–0.16** — not significant at 5% once the 3-treated-cluster
+  count is handled. 2009's slope is non-significant under every method.
+- **RI-joint rejects (p ≈ 0.001–0.006), but that is a mismatched-reference artifact, not
+  evidence of a pre-trend:** the placebo null draws from the 41 never-treated agencies, so
+  its Wald distribution is far tighter than the real 3–7-treated-cluster sampling
+  distribution, making the observed Wald look extreme. The slope RI (a single, scale-free
+  coefficient) is better behaved and agrees with WCR.
+- **Bottom line:** under few-cluster-correct inference (restricted WCR, the recommended
+  procedure), **neither 2009 nor 2013 shows a significant pre-trend — slope or joint.** The
+  round-2 CR1 rejections (2013 slope; all joint) were small-cluster artifacts. So the two
+  highest-weight *testable* stacked cohorts do pass their pre-tests once inference accounts
+  for the handful of treated clusters — which strengthens, not weakens, the reliance on
+  those few cohorts, since the untestable/early cohorts still carry no check at all.
+
+**2. Predicted vs. actual CS–imputation per-cohort gap (droppers).**
+`d6_gap_predicted_vs_actual.csv`, `figures/d6_gap_predicted_vs_actual.*`. Predicted gap =
+`slope_g × (pre_g − 1)/2`, with `slope_g` the cohort's differential linear pre-trend vs
+never-treated; actual = `τ̂_imp − τ̂_CS` (cohort averages). **Correlation 0.50 (n = 9;**
+cohorts 2001–2002 excluded, `pre_g < 3` so no estimable slope). The direction is right for
+most cohorts and the biggest actual gaps (2017, 2018, 2013) are correctly signed but
+*under-predicted* in magnitude; 2019 is the one sign flip. So an extrapolated linear
+pre-trend accounts for roughly half of the per-cohort CS–imputation disagreement — real
+and in the predicted direction, but not the whole story (the remainder is nonlinear
+pre-trends, effect dynamics, and small-cohort noise). This is consistent with the bridge
+result that the gap is a Layer-2 (counterfactual) phenomenon.
+
+**3. Cengiz panel caption (done).** All three figures now carry: "Panel B2 (Cengiz ±4):
+only cohorts 2004–2016 have a full ±4 window in 2000–2020; cohorts with pre_g < 4
+(2001–2003) are EXCLUDED by the window, not down-weighted to zero."
+
+New outputs: `d6_pretests_2009_2013_robust.csv`, `d6_gap_predicted_vs_actual.csv`,
+`figures/d6_gap_predicted_vs_actual.*`.
