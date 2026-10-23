@@ -234,6 +234,11 @@ New outputs: `d6_pretests_2009_2013_robust.csv`, `d6_gap_predicted_vs_actual.csv
 Δ̂^Imp_{g,0} := τ̂_imp(g,g) − τ̂_CS-NYT(g,g) (imputation FE counterfactual vs Callaway–
 Sant'Anna with not-yet-treated controls, varying base = g−1).
 
+> **The "inherited" framing below is superseded by round 5.** Round 5 shows, via Lemma 1's
+> correct pre-*average* baseline, that the s=1 gap is 100% the block bias with zero imbalance
+> (the panel is balanced); the small round-4 remainder was an artifact of the last-pre-period
+> baseline, not inheritance. The exact gap values and the 2001=0 verification below stand.
+
 - **Verified:** cohort **2001 gap = −2.7e-11** (≈ 0 to 1e-8) — Denver has a single
   untreated pre-period, so its imputation residual at g−1 is identically zero. 2002 gap =
   **−0.250**. The own/inherited split sums to the gap **exactly** (max |own+inh−gap| = 0).
@@ -293,3 +298,85 @@ correct here.
 New outputs: `d6_gap_identity_s1.csv`, `d6_liu_weights.csv`, `d6_gap_decomposition.*`,
 `d6_mde_wcr.csv`, `fig_weight_checkability_d6_v2_wcrmde.*`, `d6_ri_diagnostics.csv`,
 `d6_ri_sizematched.csv`, `d6_appendix_gap_linear_slope.*`.
+
+---
+
+## Round 5 (items 1–4, final)
+
+**Note on the paper.** The Liu (2025) PDF (arXiv:2509.01829) was not present in the
+checkout or the remote branch, and arxiv.org is blocked by the egress proxy, so it could
+not be opened here. Item 1 uses the Lemma-1 simple-means formula **as stated in the brief**
+and verifies it reproduces the FE gap exactly.
+
+**1. Lemma 1 check — and a correction to round 4.** `d6_lemma1_full.csv`,
+`d6_lemma1_balanced.csv`; figure `d6_gap_decomposition.*` (relabeled).
+Δ̂^Imp_{g,0} = (Ȳ^T_{g−1} − Ȳ^T_{pre-avg}) − (Ȳ^C_{g−1} − Ȳ^C_{pre-avg}), computed from
+simple means, C = never-treated ∪ {cohorts g′>g}, unit-equal weighting, independent of the
+stage-1 fit.
+
+- The droppers sample is **already fully balanced** (781/781 agencies have complete
+  2000–2020 fatal-encounters outcomes), so the FE imputation **is** the simple-means
+  long-difference DiD. Δ̂^Imp **equals the FE gap_s1 to 1e-10 on both** the full droppers
+  sample (max |remainder| = 0.0000) **and** the balanced subpanel (max 1.2e-10). Lemma 1
+  verified; the imbalance remainder is **zero** (there is no imbalance to attribute).
+- **This corrects round 4.** The round-4 "inherited adjustment-cohort term" (≤6% of the
+  gap) was **not inheritance** — it was an artifact of using the last-pre-period *FE
+  residual* as the baseline instead of Lemma 1's pre-period *average*. With the correct
+  pre-average baseline, **the s=1 gap is 100% the Lemma-1 block bias**; there is no
+  inherited term and (on this balanced panel) no imbalance. The figure is relabeled
+  accordingly (blue = Δ̂^Imp; orange = imbalance ≈ 0), and the Liu N_k/(…) weights are no
+  longer needed to explain the s=1 gap.
+
+**2. Contribution table.** `d6_gap_contributions.csv`. Contribution_g = w_g ·
+(τ̂_imp,g − τ̂_CS-NYT,g), cohort-average over post-periods, at common (imputation = CS
+simple) weights.
+
+| cohort | w_g | gap_avg_g | contribution |
+|---|---|---|---|
+| 2002 | 0.293 | −0.242 | **−0.071** |
+| 2017 | 0.046 | −0.715 | **−0.033** |
+| 2013 | 0.093 | −0.267 | **−0.025** |
+| 2009 | 0.324 | +0.050 | +0.016 |
+| 2004 | 0.066 | +0.128 | +0.008 |
+| 2018 | 0.012 | −0.620 | −0.007 |
+| others | | | ≤ |0.005| each |
+
+Sum = **−0.1194 = imputation ATT (−0.043) − CS-NYT ATT (+0.076)** (ties out exactly with
+the round-2 bridge). **Top 3 cohorts (2002/2017/2013) = 75% of the total |contribution|.**
+Reconciliation with round 2: round 2 flagged 2013/2017/**2018** by *unweighted per-cohort
+estimate* differences; once weighted, **2017 and 2013 persist**, **2002 becomes the single
+biggest contributor** (large weight × moderate gap), and **2018 drops out** — its huge
+per-cohort gap (−0.62) rides on a negligible weight (0.012), contributing only −0.007. So
+the aggregate CS-imputation disagreement is a 2002/2017/2013 phenomenon.
+
+**3. testable_g = FALSE when n_treated_clusters = 1.** `d6_untestable_ncluster.csv`; figure
+`fig_weight_checkability_d6_v2_ncluster.*`. With no valid few-cluster inference for a single
+treated cluster, the untestable weight share rises sharply:
+
+| estimator | untestable (old) | untestable (n_g=1 → untestable) | single-unit cohorts flipped |
+|---|---|---|---|
+| CS (simple) | 0.37 | **0.54** | 6 |
+| stacked (R2) | 0.00 | **0.23** | 6 |
+| stacked Cengiz | 0.00 | **0.25** | 3 |
+| imputation (BJS) | 0.37 | **0.54** | 6 |
+
+Only **2009, 2013, 2017** (the multi-treated-unit cohorts) remain testable in any panel.
+Over half of CS/imputation weight and roughly a quarter of stacked weight sits on cohorts
+whose pre-trend cannot be tested with valid inference — the sharpest form of the core claim.
+
+**4. RI matched on pre-period outcome mean.** `d6_ri_meanmatched.csv`.
+
+| cohort | joint p — WCR | RI unmatched | RI size-matched | RI **mean-matched** |
+|---|---|---|---|---|
+| 2009 | 0.332 | 0.006 | 0.002 | **0.064** |
+| 2013 | 0.551 | 0.006 | 0.002 | **0.024** |
+
+Matching placebo cohorts on **pre-period outcome mean** (not size) moves RI toward WCR:
+2009 no longer rejects at 5% (0.006 → 0.064), 2013 is much weaker (0.024). This confirms the
+round-4 diagnostic — the RI–WCR disagreement was driven by the **outcome-level** gap between
+treated cohorts and the never-treated pool, not agency size. Reported alongside WCR; not
+adjudicated.
+
+New outputs: `d6_lemma1_full.csv`, `d6_lemma1_balanced.csv`, `d6_gap_contributions.csv`,
+`d6_untestable_ncluster.csv`, `fig_weight_checkability_d6_v2_ncluster.*`,
+`d6_ri_meanmatched.csv`, and the relabeled `d6_gap_decomposition.*`.
