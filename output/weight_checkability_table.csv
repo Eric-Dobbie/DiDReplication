@@ -50,13 +50,26 @@
 "stacked","droppers",2018,1,18,3,0.0327958711134146,0.00201587784697173,TRUE,"stack clean controls (No Change)",-0.68143649722598
 "stacked","droppers",2019,1,19,2,0.0230785759686991,0.00190619957928823,TRUE,"stack clean controls (No Change)",-0.373215427232055
 "stacked","droppers",2020,1,20,1,0.0121466189308943,0.00180318002503032,TRUE,"stack clean controls (No Change)",-0.0198380566801621
-"imputation","droppers",2002,4,2,19,0.317991631799163,NA,FALSE,"never + not-yet-treated at g",0.0484256867050425
-"imputation","droppers",2004,1,4,17,0.0711297071129707,0.0492948671671006,TRUE,"never + not-yet-treated at g",-0.0657301148008674
-"imputation","droppers",2008,1,8,13,0.0543933054393305,0.0172620644364092,TRUE,"never + not-yet-treated at g",-0.120341988404153
-"imputation","droppers",2009,7,9,12,0.351464435146443,0.0401446293335979,TRUE,"never + not-yet-treated at g",-0.111683774238565
-"imputation","droppers",2013,3,13,8,0.100418410041841,0.0261566949573277,TRUE,"never + not-yet-treated at g",0.0276190632934705
-"imputation","droppers",2014,1,14,7,0.0292887029288703,0.0104828049314425,TRUE,"never + not-yet-treated at g",-0.172304403833224
-"imputation","droppers",2017,3,17,4,0.0502092050209205,0.00889082397894128,TRUE,"never + not-yet-treated at g",0.0220488536689811
-"imputation","droppers",2018,1,18,3,0.0125523012552301,0.00699084771356407,TRUE,"never + not-yet-treated at g",-0.612015669819504
-"imputation","droppers",2019,1,19,2,0.00836820083682008,0.00616164482860998,TRUE,"never + not-yet-treated at g",-0.327856226017822
-"imputation","droppers",2020,1,20,1,0.00418410041841004,0.00570720386564619,TRUE,"never + not-yet-treated at g",0.0390243901607005
+"stacked_cengiz","deck",2004,2,4,17,0.145951389026003,0.055846213187668,TRUE,"never-treated (Cengiz +/-4)",-3.51281503885303e-18
+"stacked_cengiz","deck",2008,1,8,13,0.0712381779769779,0.0224080293857243,TRUE,"never-treated (Cengiz +/-4)",0.115853658536586
+"stacked_cengiz","deck",2009,8,9,12,0.43633384010899,0.0373115622554683,TRUE,"never-treated (Cengiz +/-4)",-0.22212543554007
+"stacked_cengiz","deck",2012,1,12,9,0.0712381779769779,0.0112336666058868,TRUE,"never-treated (Cengiz +/-4)",-0.164634146341465
+"stacked_cengiz","deck",2013,3,13,8,0.204000236934073,0.0263686424934555,TRUE,"never-treated (Cengiz +/-4)",0.120325203252031
+"stacked_cengiz","deck",2014,1,14,7,0.0712381779769779,0.0103529992404944,TRUE,"never-treated (Cengiz +/-4)",-0.181707317073172
+"stacked_cengiz","deck",2016,1,16,5,0,0.00863397525178687,TRUE,"never-treated (Cengiz +/-4)",NA
+"stacked_cengiz","droppers",2004,1,4,17,0.0834123222748815,0.0558739997516397,TRUE,"never-treated (Cengiz +/-4)",-0.0365853658536589
+"stacked_cengiz","droppers",2008,1,8,13,0.0834123222748815,0.0224080293857243,TRUE,"never-treated (Cengiz +/-4)",0.115853658536586
+"stacked_cengiz","droppers",2009,7,9,12,0.510900473933649,0.0413038971147171,TRUE,"never-treated (Cengiz +/-4)",-0.22212543554007
+"stacked_cengiz","droppers",2013,3,13,8,0.238862559241706,0.0263686424934555,TRUE,"never-treated (Cengiz +/-4)",0.120325203252031
+"stacked_cengiz","droppers",2014,1,14,7,0.0834123222748815,0.0103529992404944,TRUE,"never-treated (Cengiz +/-4)",-0.181707317073172
+"imputation","droppers",2001,1,1,20,0.0772200772200772,NA,FALSE,"never + not-yet-treated at g",-8.9347656730332e-05
+"imputation","droppers",2002,4,2,19,0.293436293436293,NA,FALSE,"never + not-yet-treated at g",0.0484256866918525
+"imputation","droppers",2004,1,4,17,0.0656370656370656,0.0492948671671006,TRUE,"never + not-yet-treated at g",-0.0657301148009447
+"imputation","droppers",2008,1,8,13,0.0501930501930502,0.0172620644364092,TRUE,"never + not-yet-treated at g",-0.120341988394589
+"imputation","droppers",2009,7,9,12,0.324324324324324,0.0401446293335979,TRUE,"never + not-yet-treated at g",-0.111683774227295
+"imputation","droppers",2013,3,13,8,0.0926640926640927,0.0261566949573277,TRUE,"never + not-yet-treated at g",0.0276190633044283
+"imputation","droppers",2014,1,14,7,0.027027027027027,0.0104828049314425,TRUE,"never + not-yet-treated at g",-0.172304403822578
+"imputation","droppers",2017,3,17,4,0.0463320463320463,0.00889082397894128,TRUE,"never + not-yet-treated at g",0.0220488536790427
+"imputation","droppers",2018,1,18,3,0.0115830115830116,0.00699084771356407,TRUE,"never + not-yet-treated at g",-0.61201566980978
+"imputation","droppers",2019,1,19,2,0.00772200772200772,0.00616164482860998,TRUE,"never + not-yet-treated at g",-0.327856226008461
+"imputation","droppers",2020,1,20,1,0.00386100386100386,0.00570720386564619,TRUE,"never + not-yet-treated at g",0.0390243901696788

@@ -95,10 +95,10 @@ check_cohort <- function(g, estimator, treated_ids, dsrc, has_controls=TRUE){
 # ============================================================================
 # Panel A: CS simple -- exact cohort weights via att_gt + aggte gradient
 # ============================================================================
-cs_panel <- function(d, sample){
+cs_panel <- function(d, sample, cg="nevertreated"){
   set.seed(0)
   mp <- suppressWarnings(did::att_gt(yname="any.fatalities",tname="year",idname="agency.num",
-        gname="gname", xformla=~1, control_group="nevertreated", clustervars="agency.num",
+        gname="gname", xformla=~1, control_group=cg, clustervars="agency.num",
         base_period="universal", data=d))
   base <- aggte(mp, type="simple")$overall.att
   n <- length(mp$att); w <- numeric(n); dd <- 1e-4
@@ -160,6 +160,33 @@ stacked_panel <- function(d, sample, deck_csv=NULL, stacked_fatal=NULL){
   list(tab=do.call(rbind, rows), overall=overall) }
 
 # ============================================================================
+# Panel B2: Cengiz +/-4 stacks with NEVER-TREATED controls (robustness on B)
+#   balanced +/-4 window, cohorts 2004..2016 (full window in 2000-2020),
+#   controls = never-treated (gname==0, 41), Cengiz FE = agency x stack +
+#   year x stack (= the R2 interactive FE). V_s/V via the same decomposition.
+# ============================================================================
+cengiz_panel <- function(d, sample){
+  K <- WINDOW; never <- unique(d$agency.id[d$gname==0]); nt <- d[d$agency.id %in% never, ]
+  cohorts <- sort(unique(d$year.changed[!is.na(d$year.changed) & d$year.changed>=FIRST_OUT]))
+  cohorts <- cohorts[cohorts-K>=FIRST_OUT & cohorts+K<=LAST]                 # 2004..2016
+  parts <- list()
+  for (g in cohorts){ tr<-d[!is.na(d$year.changed)&d$year.changed==g & d$year>=g-K & d$year<=g+K,]
+    if (nrow(tr)==0) next; tr$cohort<-g; tr$treat<-1L
+    ct<-nt[nt$year>=g-K & nt$year<=g+K,]; ct$cohort<-g; ct$treat<-0L
+    parts[[length(parts)+1L]]<-rbind(tr,ct) }
+  rec <- do.call(rbind, parts); rec$year.cohort <- as.numeric(paste0(rec$year, rec$cohort))
+  est <- rec[!is.na(rec$any.fatalities), ]; dec <- decomp_stack(est)
+  overall <- sum(ifelse(dec$w_s>0 & !is.na(dec$beta_s), dec$w_s*dec$beta_s, 0))
+  rows <- lapply(seq_len(nrow(dec)), function(i){ g<-dec$stack[i]
+    tids <- unique(d$agency.id[!is.na(d$year.changed) & d$year.changed==g])
+    ck <- check_cohort(g, "CS", tids, d, has_controls=(dec$n_c[i]>0))       # NT comparison, like CS
+    data.frame(estimator="stacked_cengiz", sample=sample, cohort=g, n_g=dec$n_g[i],
+      pre_g=ck$pre_g, post_g=ck$post_g, weight=dec$w_s[i], mde_g=ck$mde_g,
+      testable_g=ck$testable, comparison_group="never-treated (Cengiz +/-4)",
+      atom_or_stack_estimate=dec$beta_s[i], row.names=NULL) })
+  list(tab=do.call(rbind, rows), overall=overall) }
+
+# ============================================================================
 # Panel C: BJS/Gardner imputation (droppers only, absorbing)
 # ============================================================================
 imputation_panel <- function(d, sample){
@@ -167,8 +194,10 @@ imputation_panel <- function(d, sample){
   treated <- d$gname %in% 2001:2020 & d$year >= d$gname            # absorbing drop, year>=onset
   untreated <- (d$gname==0) | (d$gname %in% 2001:2020 & d$year < d$gname)  # never + not-yet
   u <- d[untreated, ]; t <- d[treated, ]
-  s1 <- feols(any.fatalities ~ 1 | agency.num + year, data=u)
-  t$yhat0 <- predict(s1, newdata=t)                                # agencies w/o pre obs -> NA (dropped)
+  # fixef.rm="none": a lone untreated obs still identifies alpha_i (= Y - gamma_t);
+  # the default "perfect_fit" would drop it as a singleton and lose the cohort (e.g. 2001/Denver).
+  s1 <- feols(any.fatalities ~ 1 | agency.num + year, data=u, fixef.rm="none")
+  t$yhat0 <- predict(s1, newdata=t)                                # NA only if agency truly has no untreated obs
   dropped_na <- sum(is.na(t$yhat0)); t <- t[!is.na(t$yhat0), ]
   t$tau <- t$any.fatalities - t$yhat0
   N1 <- nrow(t); overall <- mean(t$tau)
@@ -190,14 +219,18 @@ csA_deck <- cs_panel(dta,      "deck")
 csA_drop <- cs_panel(dta_drop, "droppers")
 stB_deck <- stacked_panel(dta, "deck", deck_csv=file.path(OUT,"fwl_decomp_unweighted.csv"), stacked_fatal=sf)
 stB_drop <- stacked_panel(dta_drop, "droppers")
+cz_deck  <- cengiz_panel(dta,      "deck")
+cz_drop  <- cengiz_panel(dta_drop, "droppers")
 imC_drop <- imputation_panel(dta_drop, "droppers")
 
-TAB <- rbind(csA_deck$tab, csA_drop$tab, stB_deck$tab, stB_drop$tab, imC_drop$tab)
+TAB <- rbind(csA_deck$tab, csA_drop$tab, stB_deck$tab, stB_drop$tab,
+             cz_deck$tab, cz_drop$tab, imC_drop$tab)
 write.csv(TAB, file.path(OUT,"weight_checkability_table.csv"), row.names=FALSE)
 
 cat("=============================================================\n")
 cat("overall ATTs: CS deck", round(csA_deck$overall,6), "| CS drop", round(csA_drop$overall,6),
     "| stacked deck", round(stB_deck$overall,6), "| stacked drop", round(stB_drop$overall,6),
+    "\n              Cengiz+/-4 NT deck", round(cz_deck$overall,6), "| Cengiz drop", round(cz_drop$overall,6),
     "| imputation drop", round(imC_drop$overall,6), "\n")
 
 # ============================================================================
@@ -210,6 +243,7 @@ vald <- function(est, samp, target=NA){ d <- TAB[TAB$estimator==est & TAB$sample
       if(is.finite(target)) sprintf(" (target %.3f, diff %.2e)", target, att-target) else "")) }
 vald("CS","deck",0.045); vald("CS","droppers")
 vald("stacked","deck",-0.099); vald("stacked","droppers")
+vald("stacked_cengiz","deck", cz_deck$overall); vald("stacked_cengiz","droppers", cz_drop$overall)
 vald("imputation","droppers", imC_drop$overall)
 cat(sprintf("  [1] weights sum to 1 within each estimator x sample (above).\n"))
 cat(sprintf("  [4] cohort 2000 present in CS? %s ; in imputation? %s  (dropped: already-treated in first obs year 2000 -> no untreated pre-period)\n",
@@ -227,14 +261,16 @@ cat(sprintf("      max abs diff = %.4f\n", max(cmp$absdiff, na.rm=TRUE)))
 # ============================================================================
 spear <- function(w, pg) if (length(w)>=3) suppressWarnings(cor(w, pg, method="spearman")) else NA_real_
 
-make_fig <- function(sub, file, xvar, xlab, title){
-  base_lab <- c(CS="A: CS (simple)", stacked="B: stacked (R2 FE)", imputation="C: imputation (BJS)")
+make_fig <- function(sub, file, xvar, xlab, title, width=12){
+  base_lab <- c(CS="A: CS (simple)", stacked="B: stacked (R2 FE)",
+                stacked_cengiz="B2: stacked Cengiz +/-4 (NT)", imputation="C: imputation (BJS)")
+  ord <- intersect(c("CS","stacked","stacked_cengiz","imputation"), unique(sub$estimator))
   # per-panel stats embedded in the strip title (ATT + untestable weight share + rho)
-  stat <- sapply(c("CS","stacked","imputation"), function(e){ p<-sub[sub$estimator==e,]
+  stat <- sapply(ord, function(e){ p<-sub[sub$estimator==e,]
     sprintf("%s\nATT=%.3f  untestable wt=%.2f  rho(w,pre_g)=%.2f", base_lab[e],
       sum(p$weight*p$atom_or_stack_estimate, na.rm=TRUE), sum(p$weight[!p$testable_g], na.rm=TRUE),
       spear(p$weight, p$pre_g)) })
-  sub$estimator <- factor(sub$estimator, levels=c("CS","stacked","imputation"), labels=stat)
+  sub$estimator <- factor(sub$estimator, levels=ord, labels=stat)
   # x placement: untestable cohorts -> right strip at xmax*1.9 (mde fig only)
   fin <- sub[sub$testable_g & is.finite(sub[[xvar]]), ]
   if (xvar=="mde_g"){
@@ -256,24 +292,23 @@ make_fig <- function(sub, file, xvar, xlab, title){
     g <- g + scale_x_log10() +
       annotate("text", x=sqrt(strip_lo*strip_hi), y=Inf, label="not testable", angle=90, vjust=1.1, hjust=1, size=2.6, color="grey35")
   }
-  ggsave(file.path(FIG, paste0(file,".pdf")), g, width=12, height=4.2, device=cairo_pdf)
-  ggsave(file.path(FIG, paste0(file,".png")), g, width=12, height=4.2, dpi=200)
+  ggsave(file.path(FIG, paste0(file,".pdf")), g, width=width, height=4.2, device=cairo_pdf)
+  ggsave(file.path(FIG, paste0(file,".png")), g, width=width, height=4.2, dpi=200)
   file.copy(file.path(FIG,paste0(file,".png")), file.path(OUT,paste0(file,".png")), overwrite=TRUE)
   invisible(g) }
 
-# version (i): A/B deck, C droppers
-v1 <- rbind(csA_deck$tab, stB_deck$tab, imC_drop$tab)
-# version (ii): all droppers
-v2 <- rbind(csA_drop$tab, stB_drop$tab, imC_drop$tab)
+# version (i): A/B/B2 deck, C droppers ; version (ii): all droppers
+v1 <- rbind(csA_deck$tab, stB_deck$tab, cz_deck$tab, imC_drop$tab)
+v2 <- rbind(csA_drop$tab, stB_drop$tab, cz_drop$tab, imC_drop$tab)
 make_fig(v1, "fig_weight_checkability_d6_v1", "mde_g",
   "minimum detectable pre-trend slope  mde_g  (log; right strip = not testable)",
-  "Weight vs. checkability  (i): CS/stacked on deck sample, imputation on droppers")
+  "Weight vs. checkability  (i): CS/stacked/Cengiz on deck sample, imputation on droppers", width=15)
 make_fig(v2, "fig_weight_checkability_d6_v2", "mde_g",
   "minimum detectable pre-trend slope  mde_g  (log; right strip = not testable)",
-  "Weight vs. checkability  (ii): all three on droppers sample")
+  "Weight vs. checkability  (ii): all estimators on droppers sample", width=15)
 make_fig(v2, "fig_weight_checkability_d6_preg", "pre_g",
   "observed untreated pre-periods  pre_g = g - 2000",
-  "Companion (pre_g axis): all three on droppers sample")
+  "Companion (pre_g axis): all estimators on droppers sample", width=15)
 
 # ---- weight movement between samples (report) --------------------------------
 cat("\n=== cohort-weight movement deck -> droppers ===\n")
@@ -293,4 +328,60 @@ for (vn in c("v1","v2")){ vv <- get(vn)
     cat(sprintf("  %-4s %-11s rho=%.2f ; untestable weight share=%.2f\n", vn, est,
         spear(p$weight,p$pre_g), sum(p$weight[!p$testable_g],na.rm=TRUE))) } }
 
-cat("\nWrote weight_checkability_table.csv, fig_weight_checkability_d6_{v1,v2,preg}.*\n")
+# ============================================================================
+# ITEM 3: bridge the CS-imputation gap on droppers:  CS-NT -> CS-NYT -> imputation
+# ============================================================================
+cat("\n=== BRIDGE: CS-NT -> CS-NYT -> imputation (droppers) ===\n")
+csNYT <- cs_panel(dta_drop, "droppers", cg="notyettreated")
+cat(sprintf("overall ATT:  CS-NT %.4f  ->  CS-NYT %.4f  ->  imputation %.4f\n",
+    csA_drop$overall, csNYT$overall, imC_drop$overall))
+b_nt  <- csA_drop$tab[,c("cohort","atom_or_stack_estimate")]; names(b_nt)[2]<-"CS_NT"
+b_nyt <- csNYT$tab[,c("cohort","atom_or_stack_estimate")];    names(b_nyt)[2]<-"CS_NYT"
+b_imp <- imC_drop$tab[,c("cohort","atom_or_stack_estimate")]; names(b_imp)[2]<-"imputation"
+wts   <- csA_drop$tab[,c("cohort","weight")]; names(wts)[2]<-"weight_CSsimple"
+bridge <- Reduce(function(a,b) merge(a,b,by="cohort",all=TRUE), list(wts,b_nt,b_nyt,b_imp))
+write.csv(bridge, file.path(OUT,"d6_bridge_cs_imputation.csv"), row.names=FALSE)
+cat("per-cohort estimates (tau_g):\n")
+print(transform(bridge, weight_CSsimple=round(weight_CSsimple,3), CS_NT=round(CS_NT,3),
+  CS_NYT=round(CS_NYT,3), imputation=round(imputation,3)), row.names=FALSE)
+
+# ============================================================================
+# ITEM 4: pre-tests for the highest-weight testable cohorts (stacked 2009, 2013)
+#   joint pre-trend Wald + linear-trend slope, per estimator's own comparison grp
+# ============================================================================
+pretest <- function(g, treated_ids, comp_ids, dsrc, label){
+  pre <- FIRST_OUT:(g-1)
+  sub <- dsrc[dsrc$year %in% pre & !is.na(dsrc$any.fatalities) & dsrc$agency.id %in% c(treated_ids,comp_ids), ]
+  sub$D <- as.integer(sub$agency.id %in% treated_ids)
+  out <- data.frame(estimator=label, cohort=g, n_pre=length(pre), n_treated=length(treated_ids),
+    slope=NA_real_, slope_se=NA_real_, slope_p=NA_real_, mde=NA_real_,
+    joint_stat=NA_real_, joint_df=NA_real_, joint_p=NA_real_, row.names=NULL)
+  if (length(pre)<3 || !length(comp_ids) || length(unique(sub$D))<2) return(out)
+  ml <- tryCatch(feols(any.fatalities ~ year*D, data=sub, cluster=~agency.num), error=function(e) NULL)
+  if (!is.null(ml)){ ct<-coeftable(ml); if("year:D" %in% rownames(ct)){
+    out$slope<-ct["year:D","Estimate"]; out$slope_se<-ct["year:D","Std. Error"]
+    out$slope_p<-ct["year:D","Pr(>|t|)"]; out$mde<-Zc*ct["year:D","Std. Error"] } }
+  mj <- tryCatch(feols(any.fatalities ~ i(year, D, ref=g-1) | agency.num + year, data=sub, cluster=~agency.num), error=function(e) NULL)
+  if (!is.null(mj)){ w <- tryCatch(fixest::wald(mj, "year::", print=FALSE), error=function(e) NULL)
+    if (!is.null(w)){ out$joint_stat<-unname(w$stat); out$joint_df<-unname(w$df1); out$joint_p<-unname(w$p) } }
+  out }
+
+cat("\n=== PRE-TESTS: stacked 2009 & 2013, each estimator's own comparison group ===\n")
+pt_rows <- list()
+for (g in c(2009, 2013)){
+  tids <- unique(dta_drop$agency.id[!is.na(dta_drop$year.changed) & dta_drop$year.changed==g])
+  tids_cs <- unique(dta_drop$agency.id[dta_drop$gname==g])
+  pt_rows[[length(pt_rows)+1L]] <- pretest(g, tids_cs, never_ids(dta_drop), dta_drop, "CS (never-treated)")
+  pt_rows[[length(pt_rows)+1L]] <- pretest(g, tids, nochange_ids(dta_drop), dta_drop, "stacked (No-Change controls)")
+  pt_rows[[length(pt_rows)+1L]] <- pretest(g, tids_cs, union(never_ids(dta_drop), notyet_ids(dta_drop,g)), dta_drop, "imputation (never+not-yet)")
+  pt_rows[[length(pt_rows)+1L]] <- pretest(g, tids, never_ids(dta_drop), dta_drop, "Cengiz (never-treated)")
+}
+PT <- do.call(rbind, pt_rows)
+PT$slope_pass <- ifelse(is.na(PT$slope_p), NA, PT$slope_p>0.05)      # pass = no detectable pre-trend
+PT$joint_pass <- ifelse(is.na(PT$joint_p), NA, PT$joint_p>0.05)
+write.csv(PT, file.path(OUT,"d6_pretests_2009_2013.csv"), row.names=FALSE)
+print(transform(PT, slope=round(slope,4), slope_se=round(slope_se,4), slope_p=round(slope_p,3),
+  mde=round(mde,4), joint_stat=round(joint_stat,2), joint_p=round(joint_p,3)), row.names=FALSE)
+
+cat("\nWrote weight_checkability_table.csv, d6_bridge_cs_imputation.csv, d6_pretests_2009_2013.csv,\n")
+cat("  fig_weight_checkability_d6_{v1,v2,preg}.*\n")
