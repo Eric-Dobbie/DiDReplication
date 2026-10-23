@@ -224,3 +224,72 @@ only cohorts 2004–2016 have a full ±4 window in 2000–2020; cohorts with pre
 
 New outputs: `d6_pretests_2009_2013_robust.csv`, `d6_gap_predicted_vs_actual.csv`,
 `figures/d6_gap_predicted_vs_actual.*`.
+
+---
+
+## Round 4 (items 1–3)
+
+**1. Exact CS–imputation gap at s=1 (event time 0) + own/inherited decomposition.**
+`d6_gap_identity_s1.csv`, `d6_liu_weights.csv`, main figure `d6_gap_decomposition.*`.
+Δ̂^Imp_{g,0} := τ̂_imp(g,g) − τ̂_CS-NYT(g,g) (imputation FE counterfactual vs Callaway–
+Sant'Anna with not-yet-treated controls, varying base = g−1).
+
+- **Verified:** cohort **2001 gap = −2.7e-11** (≈ 0 to 1e-8) — Denver has a single
+  untreated pre-period, so its imputation residual at g−1 is identically zero. 2002 gap =
+  **−0.250**. The own/inherited split sums to the gap **exactly** (max |own+inh−gap| = 0).
+- The gap is **overwhelmingly the own last-pre-period block bias**; the inherited
+  adjustment-cohort term (imputation's γ̂ being pooled over all untreated obs rather than
+  cohort g's initial control group) is small everywhere — e.g. 2017: own −0.681 vs
+  inherited −0.046; 2002: own −0.234 vs inherited −0.016; |inherited| ≤ 6% of the gap.
+- The Liu (2025) Props 2.1/2.2 weights `N_k/(Σ_{j≥k}N_j + N_∞)` are constructed from cohort
+  sizes (`d6_liu_weights.csv`, e.g. 2009 → 0.121, 2002 → 0.063) as the theoretical
+  attribution of the inherited term across later (adjustment) cohorts. **Flag:** Liu (2025)
+  is not available in this environment, so the total decomposition is exact by construction
+  while the per-cohort inherited *attribution* follows the stated formula as a
+  reconstruction — not independently verified against the paper.
+- The round-3 linear-slope predicted-vs-actual plot is moved to the appendix
+  (`d6_appendix_gap_linear_slope.*`); this block-bias decomposition is the main gap figure.
+
+**2. mde_g via slope-only restricted wild cluster bootstrap (Webb, B=999), all cohorts.**
+`d6_mde_wcr.csv`, figure `fig_weight_checkability_d6_v2_wcrmde.*`; `n_treated_clusters` added.
+mde = Zc·SE_WCR, SE_WCR = SD of restricted bootstrap slopes.
+
+- The CR1 mde **badly understates** the detectable slope for **single-treated-cluster**
+  cohorts: e.g. CS 2018 0.007 → **0.094** (14×), 2008 0.022 → 0.082, 2019 0.006 → 0.081;
+  but for the 7-cluster cohort **2009 it barely moves** (0.041 → 0.042). With one treated
+  cluster the cluster-robust analytic SE is essentially meaningless; WCR restores an honest
+  (much wider) interval.
+- **Ranking reshuffle (checkability, low mde = more checkable):** under WCR the high-weight
+  **2009 jumps from least-checkable (CR1 rank #8) to #3–4**, while the single-unit late
+  cohorts (2018, 2019) become the *least* checkable. Every estimator's ordering changes for
+  most cohorts (full list in the run log / `d6_mde_wcr.csv`). The qualitative picture holds
+  — the top-weight untestable cohort 2002 is still off the axis — but the mde-based ordering
+  among *testable* cohorts is an artifact of CR1 until WCR corrects it, and 2009's weight
+  then sits on a moderately-checkable (not extreme-mde) cohort.
+
+**3. RI diagnostic + size-matched joint RI (presented, not adjudicated).**
+`d6_ri_diagnostics.csv`, `d6_ri_sizematched.csv`.
+
+| cohort | treated mean_y / var_y / officers | never-pool mean_y / var_y / officers |
+|---|---|---|
+| 2009 | 0.49 / 0.25 / 521 | 0.20 / 0.16 / 950 |
+| 2013 | 0.51 / 0.26 / 798 | 0.24 / 0.18 / 950 |
+
+Treated cohorts have **higher pre-period outcome mean and variance** (and fewer officers)
+than the never-treated placebo pool. Redrawing the placebo cohorts from **size-matched**
+never-treated agencies does **not** close the RI rejection:
+
+| cohort | joint p — WCR (mean) | joint RI unmatched | joint RI size-matched |
+|---|---|---|---|
+| 2009 | 0.332 | 0.006 | 0.002 |
+| 2013 | 0.551 | 0.006 | 0.002 |
+
+So the RI–WCR disagreement is not a size-composition artifact — it survives matching on
+agency size, pointing instead to the outcome level/variance gap between treated cohorts and
+the never-treated pool. WCR (resampling the actual treated clusters) does not reject; RI
+(against a calmer, higher-N never-treated null) does. Both are reported; neither is declared
+correct here.
+
+New outputs: `d6_gap_identity_s1.csv`, `d6_liu_weights.csv`, `d6_gap_decomposition.*`,
+`d6_mde_wcr.csv`, `fig_weight_checkability_d6_v2_wcrmde.*`, `d6_ri_diagnostics.csv`,
+`d6_ri_sizematched.csv`, `d6_appendix_gap_linear_slope.*`.
