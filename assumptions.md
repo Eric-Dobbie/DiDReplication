@@ -359,6 +359,15 @@ Literal Cengiz–Dube–Lindner–Zipperer (2019) stacks, distinct from the P&P 
   k grows — but eligible cohorts collapse from 9 to 1 (k=10 empty), so the movement is
   largely **cohort composition**, not a clean long-run trace. All windowed estimates
   are imprecise.
+- **Asymmetric window** (`cengiz_asym_window.R` → `output/cengiz_asym_window.csv`,
+  `figures/cengiz_asym_window.*`): relaxes the symmetric window — **pre fixed at 4
+  periods**, post swept from 4 upward (eligibility `g−4 ≥ 2000` and `g+p ≤ 2020`),
+  sweeping until only **one cohort** remains (2004 at post=13). Uses the full **741
+  No-Change controls**. `post=4` reproduces the symmetric ±4 value (−0.062) exactly
+  (same window). The coefficient stays in [−0.08, −0.02] across post = 4–13 with
+  eligible cohorts falling 6 → 1; all estimates imprecise and the CI blows up once
+  only 1–2 cohorts remain (post ≥ 12). Like the symmetric sweep, the movement is
+  cohort composition, not a clean dose-response in post-window length.
 - **Dimensionality** (`stacked_dimensionality.R` → `output/stacked_dimensionality.tex`):
   rows by control group × window; non-monotonic in k (2k+1 rows/unit grows while
   cohorts shrink); not-yet-treated adds only a few hundred rows over never-treated.
@@ -423,7 +432,8 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `cs_control_variants.R` | CS × {never/not-yet} × {no cov / paper cov}; coefficient plot. |
 | `cengiz_stacked.R` | literal Cengiz ±4 stack (never-treated) + comparison to P&P. |
 | `cengiz_notyet.R` | Cengiz ±4 with not-yet-treated controls. |
-| `cengiz_window_sensitivity.R` | Cengiz coefficient vs window k = 2..10. |
+| `cengiz_window_sensitivity.R` | Cengiz coefficient vs symmetric window k = 2..10. |
+| `cengiz_asym_window.R` | Cengiz coefficient vs asymmetric window: 4 pre fixed, post 4..max (until 1 cohort), 741 controls (§11). |
 | `stacked_dimensionality.R` | row counts by control group × window → `.tex`. |
 | `stacked_loo.R` | leave-one-cohort-out on the shipped stack (plain + m4), corrected FE (§9). |
 | `harmonize_atoms.R` | put CS/SA/stacked atoms on a common event-time grid → `atoms_harmonized.csv` (§19). |
@@ -436,6 +446,31 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `spec_grid.R` | 2×2×2 FE×covariate×weight grid reproducing the paper's stacked cols 3–4 → `.tex` (§8). |
 | `stacked_full15.R` | full 15-cohort stack (controls on all cohorts, no window) run "as described"; spec + standard regression tables → `.tex` (§8). |
 | `data_description.R` | descriptive panel summary (years, cities, cohorts, N) → `.tex`. |
+| `task1_counterfactual_reweight.R` | CS-vs-stacked 2×2 atoms×weights + channel decomposition, from committed atoms. |
+| `cs_aggregation_sensitivity.R` | CS simple/group/dynamic/calendar aggregates + SEs + cohort weights (verified vs `aggte`). |
+| `cs_loo.R` | CS leave-one-cohort-out with multiplier-bootstrap SEs (drop 2002 flips sign). |
+| `taskA1_wald_diagnostics.R` | pre-trend Wald diagnostics (rank, condition, scaling); found the `V_analytical` `/n` bug. |
+| `taskA2_base_period.R` | CS varying vs universal vs SA pre-estimates; CS-universal = SA exactly. |
+| `taskA3_atom_bootstrap.R` | paired agency-cluster bootstrap of per-cohort CS vs stacked atoms + atom channel (gates Task 3). |
+| `taskA4_pretrend_magnitude.R` | pre-trend figure rebuilt on coefficient magnitude + CI (replaces the retired p-value version). |
+| `taskB1_restrictions_vs_clusters.R` | restrictions-vs-treated-clusters ratio vs p (over-rejection signature). |
+| `taskB2_permutation_null.R` | permutation null: the pre-trend test rejects 71% at α=0.05 when nothing is there (`RESULTS_verification_B.md`). |
+| `taskB3B6_validation.R` | validates the Wald machinery (V=crossprod(IF)/n; corr vs bootstrap) and resolves n=71. |
+| `taskB4_bootstrap_vcov.R` | per-cohort pre-trend p: analytical vs multiplier-bootstrap vcov, both base periods. |
+| `taskB5_raw_means.R` | raw treated-vs-control outcome means for cohorts 2002, 2009 → figure. |
+| `design_sweep_core.R` | deterministic `design_weights(T,g,n_g,N_c)`: exact CS + stacked weights, closed-form, identification (`RESULTS_design_sweep.md`). |
+| `design_sweep_figureC.R` | sweep: share of weight on uncheckable cohorts (k/n_g>1), P&P located. |
+| `design_sweep_figureAB.R` | weight vs pre-period count by scheme (A); weight-vector agreement cor/L1 (B). |
+| `design_sweep_validation.R` | closed form V_s=N·T·p(1−p)q(1−q): exact under balance+common pool, degrades otherwise; P&P fit. |
+| `weight_checkability.R` | per-cohort weight vs analytic LEVEL MDE (jump + slope→mean-post-bias) vs \|effect\|; gates no_pre/no_controls/size → `fig_weight_checkability{,_bias}.*`. No cohort resolvable (2002, 2009 at 3–14× effect). |
+| `design_sweep_checkability.R` | weight-vs-MDE swept over geometry (2,016 configs, geometry-derived pools; level jump MDE). Nothing resolvable in any geometry; binding reason overwhelmingly the size gate; P&P at 42–54th pct → `design_checkability_{wmed,scatter}.*`. Supersedes the 55ddc68 version (units/pools/headline fixed). |
+| `d6_weight_checkability.R` | weight vs. checkability (mde_g/pre_g), 4 panels (CS / stacked R2 / stacked Cengiz±4-NT / imputation-BJS), deck vs droppers → `fig_weight_checkability_d6_{v1,v2,preg}.*`, `weight_checkability_table.csv`, `d6_bridge_cs_imputation.csv`, `d6_pretests_2009_2013.csv`. Claim holds for CS & imputation (ρ≈−0.8, 35–37% untestable wt), NOT stacked/Cengiz (weight mid-panel/testable). CS≡imputation simple weights exactly (fixef.rm="none"); CS–imputation ATT gap is the estimand step not the control group; stacked 2009 passes slope but fails joint Wald (over-rejection), 2013 trends. BJS from-scratch (did2s uninstallable). See RESULTS_d6_weight_checkability.md. |
+| `d6_round3.R` | robust pre-tests for stacked 2009/2013 (CR1 vs restricted wild-cluster bootstrap vs randomization inference) → `d6_pretests_2009_2013_robust.csv`: CR1 joint p=0 is over-rejection (WCR 0.19–0.57), 2013 slope not significant under WCR; + predicted vs actual CS–imputation gap `slope_g·(pre_g−1)/2` (r=0.50) → `d6_gap_predicted_vs_actual.*` (moved to appendix in round 4). |
+| `d6_round4.R` | exact CS–imputation gap at s=1 Δ̂^Imp_{g,0}=τ̂_imp(g,g)−τ̂_CS-NYT(g,g) (2001=0 verified) → `d6_gap_identity_s1.csv`; WCR-based mde for all cohorts `d6_mde_wcr.csv` + `fig_..._v2_wcrmde.*` (CR1 understates mde for 1-cluster cohorts, 2009 moves #8→#3); RI size-match diagnostic `d6_ri_{diagnostics,sizematched}.csv` (matching doesn't close RI–WCR gap). NB: round-4 "inherited"/Liu-weights framing superseded by round 5; gap figure now from round 5. |
+| `d7_geometry_sweep.R` | analytic geometry sweep (§3.3): 12 geometries (T×timing×size), deterministic weights + closed-form iid MDE, no outcomes → `d7_sweep_cohort.csv`, `d7_sweep_summary.csv`, `fig_d7_geometry_sweep.*`. Discriminates CS vs stacked on U(∞) in early/spread+equal (gap up to 0.41); late → U(∞)=0 both; at break-even both ≈1 (CS better only in late). P&P CS weights exact (2.7e-12), stacked cor 0.98/L1 0.16 (controls-def + single-treated + imbalance). MDE is iid/optimistic → U is a lower bound. See RESULTS_d7.md. |
+| `d6_round6.R` | checkability rule pre_g≥3→pre_g≥2 + unchecked-weight U^k(δ̄) diagnostic → `d6_unchecked_weight.csv`, `d6_unchecked_curve.csv`, `d6_unchecked_percohort.csv`, `d6_round6_mde.csv`, updated `d6_canonical_numbers.csv` + `d6_round6_changelog.csv`, refreshed Fig 1. 2002 now testable for CS/CS-NYT/imputation → U(∞) 0.54→0.24 (droppers); but at break-even δ̄=θ*/a_g, **U=1 at θ*=0.05** everywhere (power gap). 2002 MDE 0.77–0.96, WCR unreliable (4 treated clusters). a_g generic=closed (ok); imputation/stacked a_g=10.5. See RESULTS_d6_round6.md. |
+| `d6_verify.R` | canonical numbers of record → `d6_canonical_numbers.csv`, `RESULTS_d6_canonical.md`, `d6_att_untestable_rho.csv`, `d6_pretests_all.csv`. ATTs±SE (9 cells), untestable shares + ρ (final rule, n_cluster=1→untestable), s=1 gap, contributions (2002+2017+2013=75%), 2009/2013/**2017** pre-tests (CR1/WCR/RI-unm/RI-mean). Validations pass; only imputation ρ moved (−0.85→−0.80, the 2001 fix). 2017 slope fails even under WCR (0.026–0.037). Round-5 untestable 0.54/0.23/0.25 = droppers. |
+| `d6_round5.R` | Lemma-1 check (simple-means Δ̂^Imp = FE gap_s1 exactly; panel already balanced 781/781 → zero imbalance; round-4 "inherited" was a baseline artifact) → relabeled `d6_gap_decomposition.*`; contribution table `d6_gap_contributions.csv` (2002/2017/2013 = 75% of aggregate gap −0.119); n_g=1→untestable `d6_untestable_ncluster.csv` (untestable wt 0.54 CS/imp, 0.23 stacked) + `fig_..._v2_ncluster.*`; mean-matched RI `d6_ri_meanmatched.csv` (2009→0.064, reconciles with WCR). Liu PDF not reachable (arxiv proxy-blocked); Lemma 1 used as stated in brief. |
 | `cohort_level_variants.R` | cohort-level CS/SA under control/covariate variants. |
 | `plot_weight_vs_beta.R` | combined weight-vs-β scatter (3 estimators + hull). |
 | `plot_weight_vs_beta_facets.R` | small-multiples, per-estimator free weight axis. |
@@ -452,16 +487,30 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `stacked_loo_both.{csv,tex}`, `fwl_decomp_{unweighted,weighted,summary}.csv`,
 `stack_composition.{csv,tex}`, `data_description.{csv,tex}`,
 `stacked_nevertreated.csv`, `decomp_table.tex`, `spec_grid.{csv,tex}`,
-`stacked_full15.{csv,tex}`, `stacked_full15_regtable.tex`.
+`stacked_full15.{csv,tex}`, `stacked_full15_regtable.tex`,
+`cengiz_asym_window.csv`, `task1_{reweight_2x2,cohort_inputs}.csv`,
+`task2_{aggregation_sensitivity,cohort_weights}.csv`, `cs_loo_se.csv`,
+`taskA1_wald_diagnostics.csv`, `taskA2_base_period.csv`,
+`taskA3_atom_bootstrap.csv`, `taskA3_atom_channel_draws.csv`,
+`taskA4_pretrend_magnitude.csv`, `taskB1_restrictions.csv`,
+`taskB2_{null_pvalues,size_by_cohort}.csv`, `taskB3B6_validation.txt`,
+`taskB4_bootstrap_vcov.csv`, `taskB5_raw_means.csv`,
+`design_sweep_grid.csv`, `design_uncheckable_named.csv`,
+`design_sweep_corL1.csv`, `design_validation_pp.csv`.
 
 ### `figures/`
-Nine figures from the plotting scripts above, each `.png` + `.pdf`:
+Eleven figures from the plotting scripts above, each `.png` + `.pdf`:
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
 `cohort_level_estimates`, `cohort_level_variants`, `calendar_and_event_time`,
 `cs_variants_comparison`, `cengiz_vs_pp_stacked`, `cengiz_control_groups`,
-`cengiz_window_sensitivity`.
+`cengiz_window_sensitivity`, plus `cengiz_asym_window` (§11) and
+`pretrend_magnitude` (Task A4, `RESULTS_verification_A.md`; replaces the retired
+`pretrend_vs_weight`), `taskB2_null_pvalue_hist` and `taskB5_raw_means`
+(verification B, `RESULTS_verification_B.md`), and `design_uncheckable_share`,
+`design_weight_vs_pre`, `design_weight_agreement` (deterministic design sweep,
+`RESULTS_design_sweep.md`).
 
-All nine use **`theme_minimal()` with no plot title, subtitle, or caption** (axis
+All use **`theme_minimal()` with no plot title, subtitle, or caption** (axis
 labels, legends, reference lines and in-panel annotations retained);
 `plot_calendar_event.R` composes its two panels with `cowplot::plot_grid` (the
 env has no `patchwork`). There is no separate `*_minimal` variant — the canonical

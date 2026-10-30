@@ -1,0 +1,11 @@
+"quantity","value"
+"CS_atoms__CS_simple",0.056013
+"CS_atoms__stacked_FWL",0.075263
+"stacked_atoms__CS_simple",-0.061138
+"stacked_atoms__stacked_FWL",-0.098915
+"CS_simple_unrestricted",0.044765
+"stacked_unrestricted",-0.098915
+"gap_total",-0.154929
+"channel_weight",0.01925
+"channel_atom",-0.117151
+"channel_interaction",-0.057027
