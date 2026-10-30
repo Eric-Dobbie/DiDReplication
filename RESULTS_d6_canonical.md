@@ -44,6 +44,12 @@ B=499) — these were not computed in earlier rounds.
 
 ## Item 1 — untestable weight shares, and the sample question
 
+> **Updated in round 6:** the checkability rule changed pre_g ≥ 3 → pre_g ≥ 2, so the
+> untestable shares and n_testable below are superseded for CS-NT/CS-NYT/imputation (2002
+> becomes testable): CS/CS-NYT/imputation untestable drop to 0.213 (deck) / 0.243 (droppers);
+> stacked and Cengiz are unchanged. The round-6 values are the current canonical numbers (see
+> `RESULTS_d6_round6.md` and `d6_round6_changelog.csv`). ATTs, ρ and gap numbers are unchanged.
+
 | estimator | sample | untestable share | n_testable | testable cohorts |
 |---|---|---|---|---|
 | CS-NT | deck | 0.503 | 5 | 2004, 2009, 2013, 2017, 2018 |
