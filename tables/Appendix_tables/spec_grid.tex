@@ -1,0 +1,18 @@
+\begin{table}[!htb]\centering
+\caption{Estimated effect of removing a residency requirement on fatal encounters with police varying fixed effect structure, covariate inclusion, and entropy balanced weighting. SEs clustered on at the agency level. All rows include an interacted year$\times$stack fixed effect. P\&P Table 5 columns (3) and (4) are $-0.103\,(0.039)$ and $-0.091\,(0.037)$; both reproduce in the additive-FE + controls row (col.\ 3 unweighted, col.\ 4 weighted), confirming the paper's shared agency FE rather than the interacted $\text{agency}\times \text{stack}$ FE.}
+\label{tab:spec-grid}
+\begin{tabular}{lllrrrl}
+\toprule
+Fixed effects & Covariates & Weights & Coef. & Cluster SE & $N$ & Matches \\
+\midrule
+additive $\text{agency}$ & \checkmark & unweighted & \textbf{-0.1026} & 0.0393 & 171,444 & \textbf{col 3} \\
+additive $\text{agency}$ & \checkmark & weighted & \textbf{-0.0908} & 0.0373 & 171,444 & \textbf{col 4} \\
+additive $\text{agency}$ & none & unweighted & -0.1044 & 0.0391 & 171,906 &  \\
+additive $\text{agency}$ & none & weighted & -0.1103 & 0.0391 & 171,906 &  \\
+$\text{agency}\times\text{stack}$ & \checkmark & unweighted & -0.0971 & 0.0400 & 171,444 &  \\
+$\text{agency}\times\text{stack}$ & \checkmark & weighted & -0.0891 & 0.0375 & 171,444 &  \\
+$\text{agency}\times\text{stack}$ & none & unweighted & -0.0989 & 0.0398 & 171,906 &  \\
+$\text{agency}\times\text{stack}$ & none & weighted & -0.1084 & 0.0394 & 171,906 &  \\
+\bottomrule
+\end{tabular}
+\end{table}

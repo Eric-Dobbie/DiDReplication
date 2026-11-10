@@ -13,6 +13,17 @@
 \usepackage{tikz}
 \usepackage{csquotes}
 \usepackage{longtable}
+\usepackage{booktabs}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\ind}[1]{\mathbf{1}\!\left\{#1\right\}}
+\newcommand{\Ehat}{\widehat{\E}}
+\newcommand{\Phat}{\widehat{\Prob}}
+\newcommand{\ATT}{\mathrm{ATT}}
+\newcommand{\CATT}{\mathrm{CATT}}
+\newcommand{\Logit}{\Lambda}
+\newcommand{\DY}[2]{\Delta Y_i^{(#1,#2)}}
 
 \usetikzlibrary{arrows,positioning} 
 \tikzset{
@@ -60,7 +71,7 @@
     \begin{itemize}
         \item Common applied DiD settings are complicated, with treatments being applied at different time periods for different geographic units.
         \item These setting are especially common in policy evaluation settings, where policy is not adopted uniformly across different jurisdictions.
-        \item Typical applied work used TWFE estimators in these applications
+        \item Typical applied work uses TWFE estimators in these applications
     \end{itemize}
 \end{frame}
 
@@ -68,7 +79,7 @@
 
 \begin{frame}{Goodman-Bacon Bias}
     \begin{itemize}
-        \item However, TWFE has a problem. \textcite{goodman2021difference} showed that using TWFE leads to unintuitive comparisons, where the treatment group in a previous period serves as the control group for units treated in the current period.
+        \item However, TWFE has a problem. \textcite{goodman2021difference} shows that using TWFE leads to unintuitive comparisons, where the treatment group in a previous period serves as the control group for units treated in the current period.
         \item These comparisons bias the estimate of the ATT when using TWFE models
     \end{itemize}
 
@@ -100,7 +111,70 @@
     \end{enumerate}
 
      Because of these problems, TWFE estimators are generally not advisable in staggered treatment settings
+
 \end{frame}
+
+\begin{frame}{Existing Advice}
+         The advice the literature currently puts forward identifies the key tradeoffs in estimator selection without putting forward actionable suggestions for selection.
+         
+         \vspace{5mm}
+
+         \begin{itemize}
+             \item Reanalyzing 49 published studies, \textcite{chiu2026causal} find that these modern estimators reach qualitatively similar conclusions while producing highly variable estimates. 
+             \begin{itemize}
+                 \item The authors suggest using imputation estimators because they have more power (from using all pre-treatment periods) and match closer to TWFE in the outcome model.
+             \end{itemize}
+             \item \textcite{roth2023s} state that researchers face an efficiency-robustness tradeoff in estimator selection based on PT assumptions. They say this should be the basis for estimator selection. 
+             \begin{itemize}
+                 \item \textcite{callaway2023difference} makes this view more concrete by pointing out that the differences in PT assumptions can be boiled down to the following comparison: More periods $\Rightarrow$ more efficient; fewer periods
+              $\Rightarrow$ more robust to violations in some periods
+             \end{itemize}
+             
+         \end{itemize}
+
+        \vspace{5mm}
+
+\end{frame}
+
+\begin{frame}{Where I Contribute}
+    This paper contributes to this literature in two ways:
+    \begin{enumerate}
+        \item \textbf{Weights are a function of panel geometry.}
+        \begin{itemize}
+            \item Every weighting scheme, including stacked regression, is a function of (1) treatment timing and (2) cohort size. This means that weighting vector disagreement can be examined ex ante, prior to running any estimator.
+        \end{itemize}
+        \item \textbf{Traditional PT tests are a function of this same geometry.}
+        \begin{itemize}
+            \item Early adopters are less able to be ``checked'' for PT holding in the pre-treatment periods (simply because they have less of them)
+            \item Later adopters face a different issue, they can possibly have more periods than treated clusters.
+                    \end{itemize}
+            \item It is \textit{not} necessarily the case that these properties interact in beneficial ways. \textbf{It is possible that cohorts with few pretreatment periods receive high weights from some weighting vector choices and cohorts with ``checkable'' identification assumptions are not weighted highly}. 
+
+    \end{enumerate}
+
+\end{frame}
+
+\begin{frame}{What does ``checkable'' mean?}
+
+Generally, there are two components:
+
+\begin{enumerate}
+    \item Can we check at all?
+    \begin{itemize}
+        \item The cohort is observed untreated long enough for there to be a pre-trend.
+        \item There is a comparison group that stays untreated through that same pre-trend window.
+        \item That comparison group is the same comparison group used as a baseline in effect estimation.
+    \end{itemize}
+    \item How well can we check it?
+    \begin{itemize}
+        \item The data allow us to detect a trend violation.
+    \end{itemize}
+\end{enumerate}
+    All of these factors are fixed by panel geometry. Adoption timing, cohort sizes, and data coverage are deterministic, as they are with the weights, and nothing makes these factors agree with the weighting vector.
+
+\end{frame}
+
+
 
 \section{Reweighting Estimators}
 
@@ -109,7 +183,235 @@
 
     \vspace{2.5mm}
 
-    For this paper I will focus on the most widely adopted set of these estimators (\cite{callaway2021difference, sun2021estimating})
+    For this paper I will focus on what I call reweighting estimators. These estimators compute sub-experiment ATTs and aggregate them together, creating estimates that are a convex combination of each treatment cohort's effect (\cite{callaway2021difference, sun2021estimating, baker2026difference}).
+\end{frame}
+
+
+\begin{frame}{How do reweighting estimators work?}
+    For a setting with $n$ treatment cohorts and $m$ time periods:
+    
+    \vspace{2.5mm}
+
+    \input{tables/exampletab}
+
+    With treatment in period $k_g$, let $g \in [1,n]$ index treatment cohorts and $j \in [1,m]$ index time period, where $j \in [1,k_g)$ represent pre-treatment periods for each cohort and $j \in [k_g,m]$ represent treated periods. $\tau_{g,j}$ is the average treatment effect among the units of cohort $g$ in time $j$.
+
+ 
+
+\end{frame}
+
+\begin{frame}{Aggregating to the ATT}    
+    \textcite{callaway2021difference} propose that researchers should use these as a target estimand and directly report these $\tau_{g,j}$ values. 
+
+    \vspace{2.5mm}
+    
+    However, in settings where $g$ and/or $j$ are large, the number of $\tau_{g,j}$ values will be too large to take away substantive conclusions. 
+    
+\vspace{2.5mm}
+    
+    Therefore, many applied researchers look to aggregate these cohort by period effects into a more familiar aggregate ATT.
+\end{frame}
+
+
+\begin{frame}{Reasonable Aggregation Schemes}
+    In order to aggregate these $\ tau_{g,j}$ estimates, one can imagine several possible approaches:
+
+    \begin{itemize}
+        \item Aggregating over cohorts to generate event study or calendar estimates with period specific effects
+        \item Aggregating over periods to generate cohort specific effects
+        \item Aggregating over both periods and cohorts to generate a single ATT
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Event Study Aggregation}
+    For event study aggregation, the target is to reduce from $\ tau_{g,j}$ to period specific effects, $\theta_{es}(e)$, where $e$ represents the number of periods since treatment for each cohort $g$. Formally, $e = j - k_g$. The event study estimate is given by:
+    \begin{equation}
+        \theta_{es}(e) = \sum_i w_{i,e} \ tau_{g,e}
+    \end{equation}
+
+    Note that $e$ is cohort specific, such that $e = 1$ can be in different time periods $j$ for each cohort. 
+\end{frame}
+
+\begin{frame}{Event Study Aggregation}
+
+    Consider an example with 5 time periods and 4 treatment cohorts, treated in periods 2 to 5 sequentially, such that cohort 1 is treated in period 2, cohort 2 is treated in period 3, and so on.
+
+    \vspace{2.5mm}
+    To aggregate to $\theta_{es}(1)$, the blue cells are added together using a weighted average, $\theta_{es}(2)$ is a weighted average of green cells, $\theta_{es}(3)$ is a weighted average of the purple cells, and $\theta_{es}(4) = \tau_{1,5}$, the orange cell, by construction:
+
+    \input{tables/EventStudy/es_color}
+\end{frame}
+
+\begin{frame}{Event Study Aggregation}
+    The weights, $w_{i,e}$, depend on the estimator. \textcite{sun2021estimating} weigh by cohort-period shares such that, in the example:
+    \begin{equation}
+        \theta_{es}(e) = \frac{n_{i=1, e}}{n_{e}} \tau_{1,e} + \frac{n_{i=2, e}}{n_{e}} \tau_{2,e}+\frac{n_{i=3, e}}{n_{e}} \tau_{3,e}+\frac{n_{i=4, e}}{n_{e}} \tau_{4,e}
+    \end{equation}
+
+    Where $\frac{n_{i,e}}{n_e}$ is the share of that event period sample size from that treatment cohort. For $e = 2$, for example:
+
+    \begin{align*}
+                \theta_{es}(2) &= \frac{n_{i=1, 2}}{n_{2}} \tau_{1,2} + \frac{n_{i=2, 2}}{n_{2}} \tau_{2,2}+\frac{n_{i=3, e}}{n_{2}} \tau_{3,e}+\frac{0}{n_{2}} \tau_{4,2} \\
+                & = \frac{n_{i=1, 2}}{n_{2}} \tau_{1,2} + \frac{n_{i=2, 2}}{n_{2}} \tau_{2,2}+\frac{n_{i=3, e}}{n_{2}} \tau_{3,e}
+    \end{align*}
+\end{frame}
+
+\begin{frame}{Calendar Effects}
+    Another approach uses a calendar specific aggregation. Instead of normalizing to event time, one might be interested in the treatment effect at different points in time, so we aggregate over treatment cohorts within period $j$, for each cohort $g$ such that $j > k_g$.
+    \begin{equation}
+        \theta_c(j) = \sum_{g;j > k_g} w_{g,j} \ tau_{g,j}
+    \end{equation}
+\end{frame}
+
+\begin{frame}{Calendar Effects}
+    Carrying forward the previous example,  $\theta_{c}(1) = \tau_{1,2}$, the blue cell, $\theta_{c}(2)$ is a weighted average of green cells, $\theta_{c}(3)$ is a weighted average of the purple cells, and $\theta_{c}(4)$ is a weighted average of the orange the orange cells.
+
+    \input{tables/calendar/ex_cal}
+\end{frame}
+
+\begin{frame}{Cohort Specific Effects}
+    One could similarly imagine being interested in estimating the effects of a policy on each treatment cohort. For this, one would want to aggregate across time periods. 
+
+    \begin{equation}
+        \alpha_i = \sum_{j > k_i} w_{i,j} \ tau_{g,j}
+    \end{equation}
+\end{frame}
+
+\begin{frame}{Cohort Specific Effects}
+    Returning to the example, to find cohort effects we aggregate over time within cohorts, so $\alpha_1$ is a weighted average of the blue cells, $\alpha_2$ is a weighted average of the green cells, $\alpha_3$ is a weighted average of the purple cells, and $\alpha_4 = \tau_{4,5}$, the orange cell.
+    \input{tables/cohort/ex_cohort}
+\end{frame}
+
+\begin{frame}{Single ATT Aggregation}
+    The ATT for each of these reweighting estimators follows this general form:
+
+    \begin{equation}\label{eq:delta}
+        \delta = \sum_{i,j>k} w_{ij} * \ tau_{gj}
+    \end{equation}
+
+    Where $w_{i,j} > 0$ and $\sum_{i,j} w_{i,j} = 1$
+\end{frame}
+
+\begin{frame}{Single ATT Aggregation}
+    To obtain a single ATT, all treated cells are combined using a weighted average to estimate $\delta$
+
+    \input{tables/att/att}
+\end{frame}
+
+\begin{frame}{What Each Estimator is Selecting}
+        \begin{center}
+    \footnotesize
+    \begin{tabular}{@{}l p{2cm} p{2cm} p{2cm}@{}}
+        \toprule
+          & \textbf{Control group} & \textbf{Base period}
+          & \textbf{Aggregation weights} \\
+        \midrule
+ 
+        CS
+          & never-treated or not-yet-treated
+          & $g-1$ for every post-treatment atom. Pre-trend estimation moves with the base period.
+          & simple ($n_g \times \mathrm{post}_g$),
+            group ($n_g$), dynamic, calendar \\
+        \addlinespace
+ 
+        SA
+          & never-treated or last-treated cohort
+          & reference period $-1$, saturated leads and lags
+          & cohort shares within each relative period $e$ \\
+        \addlinespace
+ 
+        Stacked
+          & clean controls within each stack
+          & average of all pre-window periods
+          & FWL residual-variance shares $V_s / V$ \\
+ 
+        \bottomrule
+    \end{tabular}
+    \end{center}
+\end{frame}
+
+\section{Estimation}
+
+\begin{frame}{Estimation of $\hat{\tau}_{g,t}$}
+    Each of these three estimators uses a distinct approach to estimation of $\hat{\tau}_{g,t}$.
+
+    \vspace{2mm}
+
+    First, \cite{callaway2021difference} uses the following procedure:
+    \begin{enumerate}
+        \item Restrict the data to a subexperiment where we keep only units in
+              cohort $g$ and the selected control group (never-treated or
+              not-yet-treated), and periods $s = \{g-1,\, t\}$.
+        \item Estimate propensity scores on that subsample $\mathcal{S}_{g,t}$:
+    \end{enumerate}
+
+    \vspace{-2mm}
+    {\small
+    \begin{align*}
+      \hat\beta_{g,t}
+        &= \arg\max_{\beta} \sum_{k \in \mathcal{S}_{g,t}}
+           \Big[\, G_{g,k}\log \Lambda(X_k'\beta) \\[-0.5mm]
+        &\hspace{26mm}
+           + (1 - G_{g,k}) \log\big(1 - \Lambda(X_k'\beta)\big) \Big] \\[1mm]
+      \hat\pi_{g,t}(X_k)
+        &= \Lambda(X_k'\hat\beta_{g,t})
+           \;\approx\; \Pr\big(G_{g,k} = 1 \mid X_k,\ G_{g,k} + C_k = 1\big)
+    \end{align*}
+    }
+\end{frame}
+
+\begin{frame}{Estimation of $\hat{\tau}_{g,t}$}
+    \begin{enumerate}
+        \item[3.] Fit an outcome model on control units only:
+    \end{enumerate}
+
+    \vspace{-2mm}
+    {\small
+    \begin{align*}
+      \hat\gamma_{g,t}
+        &= \arg\min_{\gamma} \sum_{k \in \mathcal{S}_{g,t}}
+           C_k \, \frac{\hat\pi_{g,t}(X_k)}{1 - \hat\pi_{g,t}(X_k)}
+           \Big( \Delta Y_k^{(g,t)} - X_k'\gamma \Big)^{2} \\[1mm]
+      \hat\mu^{C}_{g,t}(X_k) &= X_k'\hat\gamma_{g,t}
+    \end{align*}
+    }
+
+    \vspace{1mm}
+    \begin{enumerate}
+        \item[4.] Estimate the sub-experiment DiD with a doubly robust estimator.
+              Writing $\hat o_k = \hat\pi_{g,t}(X_k) / \big(1 - \hat\pi_{g,t}(X_k)\big)$
+              for the odds weight,
+    \end{enumerate}
+
+    \vspace{-2mm}
+    {\small
+    \begin{equation*}
+      \widehat{\text{ATT}}^{\,dr}(g,t)
+      = \frac{1}{n} \sum_{k \in \mathcal{S}_{g,t}}
+        \left( \frac{G_{g,k}}{\widehat{\mathbb{E}}[G_g]}
+             - \frac{\hat o_k \, C_k}{\widehat{\mathbb{E}}[\hat o \, C]} \right)
+        \Big( \Delta Y_k^{(g,t)} - \hat\mu^{C}_{g,t}(X_k) \Big)
+    \end{equation*}
+    }
+\end{frame}
+
+\begin{frame}{Estimation of $\hat{\tau}$}
+
+\cite{sun2021estimating} have a distinct approach, estimating one interactive model on the full sample:
+
+\begin{align*}
+  Y_{it}
+  \;&=\;
+  \alpha_i + \lambda_t
+  + \sum_{g \notin C} \; \sum_{\ell \neq -1}
+    \delta_{g,\ell} \Big( \ind{G_i = g} \cdot \ind{t - g = \ell} \Big)
+  + \varepsilon_{it}, \\
+  &\qquad
+  \widehat{\CATT}_{g,\ell} \;=\; \hat\delta_{g,\ell}.
+\end{align*}
+
+    
 \end{frame}
 
 \section{Stacked Regression}
@@ -146,22 +448,382 @@ Once each stack has been formed, they are row binded together to form a full sta
 
 \begin{frame}{Reconstructing P\&P}
 
-I used the standard stacked regression approach to reconstruct the stacked dataset. Without access to the code they used to build the stacked dataset, which is not included in their replication files, I need to test some of the assumptions.
+I used the standard stacked regression approach to reconstruct the stacked dataset. Without access to the code they used to build the stacked dataset for \cite{payson2023resreq}, which is not included in their replication files, I need to test some of the assumptions.
     
 \end{frame}
 
 \begin{frame}{Variation in Dataset Size by Assumptions}
+    \input{tables/stacked_dimensionality_a}
+\end{frame}
 
+\begin{frame}{P\&P Stacked Regression}
+    Adding them to the table of sample size by assumptions:
+
+    \input{tables/stacked_dim_b}
 \end{frame}
 
 \begin{frame}{P\&P Stacked Regression}
 
-\cite{payson2023resreq} made some strange assumptions.
-
+What assumptions did Payson and Parinandi make?
 \begin{itemize}
-    \item They use all clean control units rather than those that are clean within a window
+    \item They used never-treated controls
+    \item They use all clean control units rather than those that are clean within a window.
 \end{itemize}
+
+The second assumption here is nonstandard.
     
 \end{frame}
 
+\begin{frame}{The standard assumptions break the result}
+
+Using the standard window based approach does lead to the results losing signigicance.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{figures/cengiz_control_groups.png}
+    \label{fig:cengiz}
+\end{figure}
+    
+\end{frame}
+
+\begin{frame}{Does the window really matter?}
+
+Not particularly. The coefficient is always negative but converges towards the P\&P result as the window length increases, but never regains significance due to the loss in sample size from the missing data boundary at 2000.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{figures/cengiz_window_sensitivity.png}
+    \label{fig:window}
+\end{figure}
+    
+\end{frame}
+
+\begin{frame}{An estimation problem}
+    In the process of replicating their approach, I found a (minor) coding error that is worth mentioning. They estimate the following:
+
+    \begin{equation}
+         Y_{i,t} = \alpha_{i} + \gamma_{t,s} + \delta D_{i,t,s} + \epsilon
+    \end{equation}
+
+    Where $\alpha_i$ is a unit fixed effect rather than a unit by cohort fixed effect. This means that the unit means for the fixed effect are residualized across the full panel, which masks the stack level effect heterogeneity.
+\end{frame}
+
+\begin{frame}{Correcting the Estimation Problem}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.6\linewidth]{figures/weight_vs_beta_decomposition.png}
+        \label{fig:weights_points}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Breaking out Estimates by Estimator}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.6\linewidth]{figures/weight_vs_beta_smallmultiples.png}
+        \label{fig:small}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{What assumptions do they need for their result to hold?}
+
+\input{tables/Results}
+    
+\end{frame}
+
+% ============================================================
+% Backup slides: Stacked Regression Weight Decomposition
+% Content taken directly from the paper appendix.
+% ============================================================
+
+\begin{frame}{Stacked Regression Weight Decomposition: Setup}
+    In the pooled stacked regression, outcomes can be expressed as:
+    \[
+        y_{its} = \gamma_{is} + \delta_{ts} + \beta D_{its} + \epsilon_{its}
+    \]
+    where $\gamma_{is}$ is a unit-by-stack fixed effect and $\delta_{ts}$ is a
+    time-by-stack fixed effect.
+
+    \vspace{3mm}
+
+    We start by partialling out the fixed effects from the treatment:
+    \[
+        D_{its} = a_{is} + g_{ts} + v_{its}
+    \]
+    Where $a_{is}$ and $g_{ts}$ are the fitted effects from projecting $D$ onto
+    the unit-by-stack and time-by-stack dummies. By FWL, $\hat{\beta}$ is
+    recovered from the regression of $y$ on $\hat{v}$:
+    \[
+        \hat{\beta} =
+        \frac{\sum_s \sum_{i,t \in s} \hat{v}_{its} y_{its}}
+             {\sum_s \sum_{i,t \in s} \hat{v}_{its}^2}
+    \]
+\end{frame}
+
+\begin{frame}{Lemma 1 (Stack Partitions)}
+    \begin{block}{Lemma 1}
+        When the unit and time fixed effects are stack-interacted, the full
+        system of $\sum_s (N_s + T_s)$ normal equations partitions into $S$
+        independent subsystems, the $s$-th being the two-way dummy regression of
+        $D$ on stack $s$'s rows alone.
+    \end{block}
+
+    \vspace{3mm}
+
+    The pooled regression can be decomposed to individual stack regressions.
+    First, we partial out the fixed effects from treatment assignment and solve
+    for the first order conditions:
+    \[
+        \min_{\{a_{is}\}\{g_{ts}\}}
+        \sum_{s=1}^{S} \sum_{i \in I_s} \sum_{t \in T_s}
+        \left[ D_{its} - a_{is} - g_{ts} \right]^2
+    \]
+    where $I_s$ is the set of units in stack $s$ and $T_s$ is the periods in
+    stack $s$.
+\end{frame}
+
+\begin{frame}{Lemma 1: Why the Interaction Matters}
+    Note that, for any unit that appears in multiple stacks, say $s$ and $s'$,
+    as a clean control, $a_{is}$ and $a_{is'}$ are separate parameters that are
+    not necessarily equal.
+
+    \vspace{3mm}
+
+    With a stack-interacted $a_{is}$ the FOC for the parameter involves only
+    rows within the stack $s$. Otherwise, a single $a_i$ appears in the FOC of
+    rows from every stack containing unit $i$ and the normal equations no longer
+    partition.
+
+    \vspace{5mm}
+
+    \footnotesize
+    This is why using $a_i$ without stack interacting, as implemented in Payson
+    and Parinandi (2025), is problematic for the purposes of the decomposition.
+    The $a_i$ parameter enters across all stacks containing unit $i$, making the
+    within stack estimation problem dependent on other stacks.
+\end{frame}
+
+\begin{frame}{Lemma 1: Solving the First Order Conditions}
+    \[
+        \frac{\partial}{\partial a_{is}}: \quad
+        -2 \sum_{t \in T_s} \left[ D_{its} - a_{is} - g_{ts} \right] = 0
+    \]
+    Solving for $a$:
+    \[
+        a_{is} = \bar{D}_{i \cdot s} - \bar{g}_s,
+        \qquad
+        \bar{D}_{i \cdot s} = \frac{1}{T_s} \sum_{t \in T_s} D_{its},
+        \qquad
+        \bar{g}_s = \frac{1}{T_s} \sum_{t \in T_s} g_{ts}
+    \]
+    Using the same logic, the first order condition with respect to $g$ gives:
+    \[
+        g_{ts} = \bar{D}_{\cdot ts} - \bar{a}_s,
+        \qquad
+        \bar{D}_{\cdot ts} = \frac{1}{N_s} \sum_{i \in I_s} D_{its},
+        \qquad
+        \bar{a}_s = \frac{1}{N_s} \sum_{i \in I_s} a_{is}
+    \]
+
+    \vspace{3mm}
+
+    Every parameter carries the stack index $s$, and every FOC ranges only over
+    rows of that stack. No parameter is shared across stacks, so the system
+    partitions as claimed. \hfill $\blacksquare$
+\end{frame}
+
+\begin{frame}{Corollary 1 (Two-Way Demeaning)}
+    \begin{block}{Corollary 1}
+        If a stack $s$ is balanced, the subsystem-$s$ residual is
+        $\hat{v}_{its} = D_{its} - \bar{D}_{i \cdot s} - \bar{D}_{\cdot ts} + \bar{D}_{\cdot \cdot s}$.
+    \end{block}
+
+    Without loss of generality, normalizing $\bar{a}_s = 0$ such that
+    $g_{ts} = \bar{D}_{\cdot ts}$ so $\bar{g}_s = \bar{D}_{\cdot \cdot s}$.
+    Plugging back into $a_{is} = \bar{D}_{i \cdot s} - \bar{g}_s$:
+    \[
+        a_{is} = \bar{D}_{i \cdot s} - \bar{D}_{\cdot \cdot s}
+    \]
+    Which satisfies $\bar{a}_s = 0$ as, once we average over the units,
+    $\bar{D}_{\cdot \cdot s} - \bar{D}_{\cdot \cdot s} = 0$.
+
+    \vspace{3mm}
+
+    Plugging back in to $\hat{D}_{its} = a_{is} + g_{ts}$:
+    \[
+        \hat{D}_{its} = \bar{D}_{i \cdot s} + \bar{D}_{\cdot ts} - \bar{D}_{\cdot \cdot s}
+        \qquad \Longrightarrow \qquad
+        \hat{v}_{its} = D_{its} - \bar{D}_{i \cdot s} - \bar{D}_{\cdot ts} + \bar{D}_{\cdot \cdot s}
+    \]
+\end{frame}
+
+\begin{frame}{Corollary 1: Verifying the FOCs}
+    Plugging in to the unit FOC:
+    \[
+        \sum_{t \in T_s} \hat{v}_{its}
+        = T_s \bar{D}_{i \cdot s} - T_s \bar{D}_{i \cdot s}
+          - T_s \bar{D}_{\cdot \cdot s} + T_s \bar{D}_{\cdot \cdot s} = 0
+    \]
+    and the time FOC:
+    \[
+        \sum_{i \in I_s} \hat{v}_{its}
+        = N_s \bar{D}_{\cdot ts} - N_s \bar{D}_{\cdot \cdot s}
+          - N_s \bar{D}_{\cdot ts} + N_s \bar{D}_{\cdot \cdot s} = 0
+    \]
+
+    \vspace{3mm}
+
+    \textbf{Assumption: Balanced Panel.} Note that
+    $\sum_{t \in T_s} \bar{D}_{\cdot ts} = T_s \bar{D}_{\cdot \cdot s}$ and
+    $\sum_{i \in I_s} \bar{D}_{i \cdot s} = N_s \bar{D}_{\cdot \cdot s}$ hold if
+    the stack is balanced such that every unit $I_s$ is observed in every period
+    $T_s$. This assumption is only necessary for Corollary 1. It is not
+    necessary for Lemma 1 or the remaining portions of the proof.
+\end{frame}
+
+\begin{frame}{Lemma 2 (Stack-Specific Coefficients)}
+    \begin{block}{Lemma 2}
+        In the saturated model, $\hat{\beta}_r$ is identical to the coefficient
+        from regressing $y$ on $D$ using the data from stack $r$ alone, provided
+        $\sum_{i,t \in r} \hat{v}_{itr}^2 > 0$.
+    \end{block}
+
+    Now, allow for each stack to have its own treatment coefficient:
+    \[
+        D^{(r)}_{its} = D_{its} \cdot \mathbf{1}\{s = r\}
+    \]
+    So $D^{(r)}$ equals the treatment indicator on stack-$r$ rows and zero
+    elsewhere. The saturated model is:
+    \[
+        y_{its} = \alpha_{is} + \gamma_{ts}
+        + \sum_{r=1}^{S} \beta_r D^{(r)}_{its} + \epsilon_{its}
+    \]
+    Each $\beta_r$ is the treatment coefficient for stack $r$. On a row in stack
+    $s$, only the $r = s$ term is nonzero.
+\end{frame}
+
+\begin{frame}{Lemma 2: Partialling Out}
+    For each stack's $\beta_r$, we can partial out the stack-by-unit and
+    stack-by-time dummies from the treatment indicator, as before:
+    \[
+        \min_{\{a^{(r)}_{is}\}\{g^{(r)}_{ts}\}}
+        \sum_{s=1}^{S} \sum_{i \in I_s} \sum_{t \in T_s}
+        \left[ D^{(r)}_{its} - a^{(r)}_{is} - g^{(r)}_{ts} \right]^2
+    \]
+    This is the same minimization problem as in Lemma 1 with $D$ replaced by
+    $D^{(r)}$. Applying Lemma 1, the problem separates into $S$ independent
+    subsystems. For a subsystem $s \neq r$, all rows of the treatment indicator
+    are equal to zero:
+    \[
+        \min_{\{a^{(r)}_{is}\}\{g^{(r)}_{ts}\}}
+        \sum_{i \in I_s} \sum_{t \in T_s}
+        \left[ 0 - a^{(r)}_{is} - g^{(r)}_{ts} \right]^2
+    \]
+    Which is minimized at $a^{(r)}_{is} = g^{(r)}_{ts} = 0$, meaning
+    $\hat{v}^{(r)}_{its} = 0$ for all $i, t$ in any stack $s \neq r$.
+\end{frame}
+
+\begin{frame}{Lemma 2: Orthogonality and Collapse}
+    Within subsystem $r$ itself, the problem collapses back to the single
+    coefficient model solved before and
+    $\hat{v}^{(r)}_{itr} = D_{itr} - \bar{D}_{i \cdot r} - \bar{D}_{\cdot tr} + \bar{D}_{\cdot \cdot r} = \hat{v}_{itr}$.
+
+    \vspace{2mm}
+
+    As a consequence, the residual regressors are mutually orthogonal such that
+    for $r \neq r'$, the product $\hat{v}^{(r)}_{its} \hat{v}^{(r')}_{its} = 0$,
+    as wherever the first term is nonzero, the second term is zero and vice
+    versa, and $\sum_s \sum_{i,t \in s} \hat{v}^{(r)}_{its} \hat{v}^{(r')}_{its} = 0$.
+
+    \vspace{2mm}
+
+    Because partialled out regressors are uncorrelated with each other, the
+    multivariate least squares solution collapses to the univariate solution
+    applied separately:
+    \[
+        \hat{\beta}_r =
+        \frac{\sum_s \sum_{i,t \in s} \hat{v}^{(r)}_{its} y_{its}}
+             {\sum_s \sum_{i,t \in s} (\hat{v}^{(r)}_{its})^2}
+        \qquad \Longrightarrow \qquad
+        \hat{\beta}_r =
+        \frac{\sum_{i,t \in r} \hat{v}_{itr} y_{itr}}
+             {\sum_{i,t \in r} (\hat{v}_{itr})^2}
+    \]
+    All terms with $s \neq r$ are equal to zero and drop out. \hfill $\blacksquare$
+\end{frame}
+
+\begin{frame}{Lemma 2: The Regularity Condition}
+    This solution requires
+    \[
+        \sum_{i,t \in r} (\hat{v}_{itr})^2 > 0
+    \]
+    or that the treatment retains variation after within-stack partialling out.
+
+    \vspace{3mm}
+
+    When this fails, coefficients within those stacks cannot be estimated. As
+    such, $\hat{\beta}_r$ does not exist in these cases and they are excluded
+    from the decomposition.
+
+    \vspace{3mm}
+
+    Hence, $\hat{\beta}_r$ is identical to the coefficient from the regression of
+    $y$ on $D$ within stack $r$'s data.
+\end{frame}
+
+\begin{frame}{Proposition 1 (Weight Decomposition)}
+    \begin{block}{Proposition 1}
+        The pooled stacked coefficient is a weighted average of the
+        stack-specific coefficients.
+        \[
+            \hat{\beta} = \sum_s w_s \hat{\beta}_s,
+            \qquad
+            w_s = \frac{V_s}{V},
+            \quad
+            V_s = \sum_{i,t \in s} \hat{v}_{its}^2,
+            \quad
+            V = \sum_{s=1}^{S} V_s
+        \]
+    \end{block}
+
+    The weights are the share of total residualized treatment variation. Weights
+    are non-negative and sum to one as $V_s$ is a sum of squares and
+    $\sum_s w_s = \sum_s V_s / V = 1$. The weights are taken over stacks that
+    satisfy the regularity condition.
+\end{frame}
+
+\begin{frame}{Proposition 1: Substitution}
+    We can rewrite $\sum_{i,t \in r} \hat{v}_{itr} y_{itr}$ as:
+    \[
+        \sum_{i,t \in r} \hat{v}_{itr} y_{itr}
+        = \hat{\beta}_r \sum_{i,t \in r} \hat{v}_{itr}^2
+    \]
+    Substituting into the pooled expression:
+    \[
+        \hat{\beta}
+        = \frac{\sum_s \hat{\beta}_s \sum_{i,t \in s} \hat{v}_{its}^2}{V}
+        = \frac{\sum_s \hat{\beta}_s V_s}{V}
+        = \sum_s w_s \hat{\beta}_s
+        \qquad \blacksquare
+    \]
+
+    \vspace{5mm}
+
+    \footnotesize
+    This property only holds under stack-interacted fixed effects, not as a
+    general property of all stacked regressions. Wing, Freedman, and
+    Hollingsworth (2024) state this convexity for a stacked fixed-effect
+    specification under the additional condition that treatment share is constant
+    across sub-experiments. It appears that this additional condition is
+    unnecessary, as the within-stack FOC in Lemma 1 force the residualized
+    treatment to have zero mean within each stack.
+\end{frame}
+
+
 \end{document}
+
+
+Run TWFE using always treated units as controls, remove all opposite switchers
+
+
+
+Put up the notes on NO to canvas and make an announcement about it not being necessary for the midterm
