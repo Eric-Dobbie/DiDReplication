@@ -6,6 +6,13 @@ grid (T∈{10,25} × timing{early,spread,late} × size{equal,concentrated}); N_c
 N_T=40 treated over K=4 cohorts, σ=1, each unit a cluster. Outputs: `d7_sweep_cohort.csv`
 (geometry×estimator×cohort), `d7_sweep_summary.csv` (geometry×estimator), `fig_d7_geometry_sweep.*`.
 
+**Paper figures.** The two rows are also exported as separate, titleless figures for the
+manuscript (titles set in LaTeX): `fig_d7_checkable.*` (U(∞) — the checkable panel) and
+`fig_d7_wellchecked.*` (U at break-even θ*=0.25 — the well-checked panel). Axis labels "Panel
+Geometry" / "Unchecked Weight", legend kept. (These two PNG/PDF were rendered this session via a
+matplotlib fallback after a container reset wiped the R toolchain; `d7_geometry_sweep.R`'s
+`mk_split()` is the canonical generator and reproduces them from `d7_sweep_summary.csv`.)
+
 Adoption times (after dedup/shift — none needed): early T10 = 2,3,4,5 / T25 = 2,6,9,13;
 spread T10 = 2,5,7,10 / T25 = 2,10,17,25; late T10 = 5,7,8,10 / T25 = 13,17,21,25.
 
