@@ -359,6 +359,15 @@ Literal Cengiz–Dube–Lindner–Zipperer (2019) stacks, distinct from the P&P 
   k grows — but eligible cohorts collapse from 9 to 1 (k=10 empty), so the movement is
   largely **cohort composition**, not a clean long-run trace. All windowed estimates
   are imprecise.
+- **Asymmetric window** (`cengiz_asym_window.R` → `output/cengiz_asym_window.csv`,
+  `figures/cengiz_asym_window.*`): relaxes the symmetric window — **pre fixed at 4
+  periods**, post swept from 4 upward (eligibility `g−4 ≥ 2000` and `g+p ≤ 2020`),
+  sweeping until only **one cohort** remains (2004 at post=13). Uses the full **741
+  No-Change controls**. `post=4` reproduces the symmetric ±4 value (−0.062) exactly
+  (same window). The coefficient stays in [−0.08, −0.02] across post = 4–13 with
+  eligible cohorts falling 6 → 1; all estimates imprecise and the CI blows up once
+  only 1–2 cohorts remain (post ≥ 12). Like the symmetric sweep, the movement is
+  cohort composition, not a clean dose-response in post-window length.
 - **Dimensionality** (`stacked_dimensionality.R` → `output/stacked_dimensionality.tex`):
   rows by control group × window; non-monotonic in k (2k+1 rows/unit grows while
   cohorts shrink); not-yet-treated adds only a few hundred rows over never-treated.
@@ -423,7 +432,8 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 | `cs_control_variants.R` | CS × {never/not-yet} × {no cov / paper cov}; coefficient plot. |
 | `cengiz_stacked.R` | literal Cengiz ±4 stack (never-treated) + comparison to P&P. |
 | `cengiz_notyet.R` | Cengiz ±4 with not-yet-treated controls. |
-| `cengiz_window_sensitivity.R` | Cengiz coefficient vs window k = 2..10. |
+| `cengiz_window_sensitivity.R` | Cengiz coefficient vs symmetric window k = 2..10. |
+| `cengiz_asym_window.R` | Cengiz coefficient vs asymmetric window: 4 pre fixed, post 4..max (until 1 cohort), 741 controls (§11). |
 | `stacked_dimensionality.R` | row counts by control group × window → `.tex`. |
 | `stacked_loo.R` | leave-one-cohort-out on the shipped stack (plain + m4), corrected FE (§9). |
 | `harmonize_atoms.R` | put CS/SA/stacked atoms on a common event-time grid → `atoms_harmonized.csv` (§19). |
@@ -452,16 +462,17 @@ row-set, 0 mismatches on `treat`, `no.req`, `any.fatalities`, `scaled.year`,
 `stacked_loo_both.{csv,tex}`, `fwl_decomp_{unweighted,weighted,summary}.csv`,
 `stack_composition.{csv,tex}`, `data_description.{csv,tex}`,
 `stacked_nevertreated.csv`, `decomp_table.tex`, `spec_grid.{csv,tex}`,
-`stacked_full15.{csv,tex}`, `stacked_full15_regtable.tex`.
+`stacked_full15.{csv,tex}`, `stacked_full15_regtable.tex`,
+`cengiz_asym_window.csv`.
 
 ### `figures/`
-Nine figures from the plotting scripts above, each `.png` + `.pdf`:
+Ten figures from the plotting scripts above, each `.png` + `.pdf`:
 `weight_vs_beta_decomposition`, `weight_vs_beta_smallmultiples`,
 `cohort_level_estimates`, `cohort_level_variants`, `calendar_and_event_time`,
 `cs_variants_comparison`, `cengiz_vs_pp_stacked`, `cengiz_control_groups`,
-`cengiz_window_sensitivity`.
+`cengiz_window_sensitivity`, plus `cengiz_asym_window` (§11).
 
-All nine use **`theme_minimal()` with no plot title, subtitle, or caption** (axis
+All use **`theme_minimal()` with no plot title, subtitle, or caption** (axis
 labels, legends, reference lines and in-panel annotations retained);
 `plot_calendar_event.R` composes its two panels with `cowplot::plot_grid` (the
 env has no `patchwork`). There is no separate `*_minimal` variant — the canonical

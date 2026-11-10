@@ -1,0 +1,425 @@
+# D6 — weight vs. checkability (one panel per estimator)
+
+`R/d6_weight_checkability.R` → `weight_checkability_table.csv`,
+`figures/fig_weight_checkability_d6_{v1,v2,preg}.{pdf,png}` (+ `output/*.png`).
+
+**Claim under test.** Under every modern estimator, the cohorts carrying the most
+aggregation weight are the cohorts whose parallel-trends assumption is least
+checkable. x = checkability (`mde_g`, log; companion with `pre_g`); y = cohort
+aggregation weight; one panel per estimator (CS simple / stacked R2 / imputation BJS).
+
+## Headline result
+
+**Supported for CS and imputation; *not* supported for stacked.**
+
+| estimator | sample | ATT | untestable weight share | ρ(weight, pre_g) |
+|---|---|---|---|---|
+| CS (simple)        | deck     | +0.045 | 0.35 | −0.78 |
+| CS (simple)        | droppers | +0.065 | 0.37 | −0.80 |
+| stacked (R2 FE)    | deck     | −0.099 | 0.06 | +0.22 |
+| stacked (R2 FE)    | droppers | −0.119 | 0.00 | +0.31 |
+| stacked Cengiz ±4 (NT) | deck | −0.089 | 0.00 | −0.48 |
+| stacked Cengiz ±4 (NT) | droppers | −0.093 | 0.00 | +0.22 |
+| imputation (BJS)   | droppers | −0.043 | 0.37 | −0.80 |
+
+(imputation ATT and shares updated after the item-1 singleton fix, which restores cohort 2001.)
+
+- **CS & imputation** put ρ ≈ −0.8 on (weight, pre_g) and **35–37% of all weight on
+  untestable cohorts**. The single largest-weight cohort, **2002** (pre_g = 2, < 3
+  pre-periods), is untestable in both; **2009** is the other big weight and sits at a
+  high `mde_g`. So weight piles onto the least-checkable cohorts — the claim holds.
+- **Stacked contradicts the pattern.** Its weight peaks on **2009 and 2013** — mid-panel,
+  *testable* cohorts — and its untestable-weight share is ≈ 0 with ρ = +0.3. The FWL
+  weight `V_s = p(1−p)·q(1−q)·N` is maximized at mid-sample adoption (q ≈ ½), which is
+  exactly where pre-periods are plentiful. The stacked estimator, by its own weighting
+  geometry, *avoids* the early untestable cohorts rather than loading them. This is the
+  one place the expected pattern breaks, and it is a property of the stacked weights, not
+  of the data. (It is also the headline from the design sweep: stacked weight concentrates
+  mid-panel.)
+
+Two figure versions: **(i)** CS/stacked on the deck sample + imputation on droppers;
+**(ii)** all three on droppers. The pattern is identical across versions.
+
+## Validation (all pass)
+
+1. **Weights sum to 1** within every estimator × sample (to 1e-8).
+2. **∑ w_g τ̂_g reproduces each aggregate ATT:** CS deck +0.044765 (target +0.045, diff
+   −2.3e-4 = rounding), stacked deck −0.098915 (target −0.099, diff +8.5e-5 = rounding),
+   imputation droppers −0.046504 (exact, this is the BJS ATT itself). CS droppers +0.065072,
+   stacked droppers −0.119049 reproduce their own re-estimated ATTs exactly.
+3. **CS vs. imputation simple weights (droppers) — now EXACTLY identical** (max abs diff
+   0.0000 across all 11 cohorts) after the item-1 singleton fix. Before the fix they
+   differed by up to 0.027 because imputation dropped cohort 2001 (Denver CO's lone
+   untreated pre-period, 2000, was removed as a fixed-effect singleton under the default
+   `fixef.rm="perfect_fit"`). With `fixef.rm="none"` that one observation identifies
+   Denver's agency intercept, cohort 2001 is retained, and the two simple-weight menus
+   coincide to machine precision — confirming Layer 1 is the same menu. (The per-cohort
+   *estimates* still differ — see the bridge below.)
+4. **Cohort 2000 is dropped by CS and imputation** (confirmed absent). Reason: its members
+   adopt in the first outcome year (2000), so they have zero untreated pre-period
+   observations — `att_gt` drops already-treated-in-first-period units, and imputation has
+   no untreated obs to fit their FE.
+
+## Checkability construction
+
+- `pre_g = g − 2000` (observed untreated pre-periods); `post_g = 2020 − g + 1`.
+- `mde_g = (z_0.975 + z_0.80)·SE(β̂_trend) = 2.802·SE`, where β̂_trend is the differential
+  (treated − comparison) linear pre-trend slope from `feols(any.fatal ~ year*D)` on
+  **pre-periods only**, clustered by agency. Comparison group is the estimator's own:
+  CS → never-treated; stacked → that stack's clean controls (the 741 No-Change agencies);
+  imputation → never-treated ∪ not-yet-treated at g (Liu block). No post-period outcome
+  ever enters.
+- `testable_g = FALSE` if `pre_g < 3`, or the estimator has no comparison group in its own
+  design (stacked 2000–2003 have zero clean controls), or the cohort is dropped (2000).
+
+## Weight movement, deck → droppers
+
+Dropping the 6 reversers/adopters moves cohort weights materially: **CS** max |Δw| = 0.068
+(∑|Δ| = 0.27), largest at 2009 (+0.068), 2003 (−0.055), 2004 (−0.038); **stacked** max |Δw|
+= 0.086 (∑|Δ| = 0.35), largest at 2009 (+0.086), 2002 (−0.060), 2012 (−0.053). Removing the
+adopters concentrates still more weight on 2009 in both estimators.
+
+## Things that contradicted / qualified the expected pattern
+
+1. **Stacked does not show the pattern** (above) — the central caveat.
+2. **CS and imputation ATTs disagree in sign** on the same droppers sample (+0.065 vs
+   −0.043) despite *exactly identical* cohort weights. The disagreement is entirely in the
+   per-cohort estimates τ̂_g (Layer 2 / counterfactual), not the weights (Layer 1), and the
+   bridge (follow-up 3) localizes it to the CS→imputation step rather than the control
+   group — the motivation for the optional counterfactual-mass figure (not built here).
+3. **Stacked 2002 is untestable yet carries weight 0.060** (deck): it has zero clean
+   controls, so its V_s comes from the within-treated adopter contrast, not a
+   never-treated comparison — hence untestable but non-zero weight. Footnoted in Panel B;
+   do not conflate it with CS cohort 2002 (41 never-treated controls).
+
+## Flags / deviations from the brief
+
+- **Package substitution:** `did2s` / `didimputation` could not be installed (CRAN
+  unreachable through the proxy; R 4.3.3 predates the binaries). Panel C is a from-scratch
+  BJS/Gardner imputation (agency + year FE on untreated obs → impute Y(0) → average τ over
+  treated obs); under R5 (no covariates) this targets the identical estimand, and ∑ w_g τ_g
+  reproduces its ATT exactly.
+- **File names:** the brief asked for `fig_weight_checkability.{pdf,png}` /
+  `fig_weight_checkability_preg.pdf`, but those collide with the committed outputs of the
+  separate `weight_checkability.R` deliverable. To avoid clobbering it, D6 figures use the
+  `fig_weight_checkability_d6_` prefix (`_v1`, `_v2`, `_preg`).
+- **Two companions:** only one `pre_g` companion was requested; it is built on the droppers
+  sample (version ii) so all three panels are on a common footing.
+- **Optional Layer-2 counterfactual figure:** not built (left as the stated optional step).
+
+---
+
+## Follow-ups (items 1–4)
+
+**1. Imputation singleton fix (done).** Stage 1 now runs with `fixef.rm="none"`, so a
+lone untreated observation still identifies its agency intercept (α_i = Y − γ_t). Cohort
+2001 (Denver) is retained; imputation ATT moves −0.047 → **−0.043**; CS and imputation
+simple weights become exactly identical (validation 3 above). Panel C and the table are
+updated.
+
+**2. Panel B2 — stacked Cengiz ±4 with never-treated controls (robustness, done).** A
+balanced ±4 window (cohorts 2004–2016 with full windows), controls = the 41 never-treated
+only (not P&P's 741 never+always), Cengiz interactive FE (agency×stack + year×stack =
+the R2 spec), w_s = V_s/V. **ATT −0.089 (deck) / −0.093 (droppers)** — close to the
+full-panel stacked −0.099 / −0.119 — and the weighting pattern is the same: all weight on
+mid-panel *testable* cohorts (2009 dominant, then 2013), untestable share 0.00. So Panel
+B's finding (stacked weight avoids the untestable early cohorts) is **robust** to using
+clean never-treated controls and a balanced window; it is a property of the V_s geometry,
+not of P&P's control pool. Added as the fourth panel in all three figures.
+
+**3. Bridge CS-NT → CS-NYT → imputation (droppers).** `d6_bridge_cs_imputation.csv`.
+Overall ATT: **CS-NT +0.065 → CS-NYT +0.077 → imputation −0.043.** The control group
+(never-treated → not-yet-treated) barely moves the estimate (+0.065 → +0.077), and the
+per-cohort τ̂_g are almost unchanged between CS-NT and CS-NYT. **The entire CS–imputation
+gap is the CS→imputation step** — i.e. the estimand/counterfactual (imputed agency+year FE
+Y(0) vs. aggregated att(g,t)), not the comparison group. It localizes to a few small
+cohorts whose τ̂ differ sharply: 2013 (CS +0.30 vs imp +0.03), 2017 (+0.74 vs +0.02),
+2018 (+0.01 vs −0.61) — these flip the weighted sum's sign. This is the Layer-2 channel
+the optional counterfactual figure would visualize.
+
+**4. Pre-tests for the highest-weight testable cohorts, 2009 and 2013.**
+`d6_pretests_2009_2013.csv`. Each estimator's own comparison group; pre-periods only.
+
+| cohort | test | CS (NT) | stacked (No-Change) | imputation | Cengiz (NT) |
+|---|---|---|---|---|---|
+| 2009 | linear slope (p) | −0.006 (0.71) | −0.018 (0.18) | −0.005 (0.72) | −0.006 (0.71) |
+| 2009 | joint Wald (p) | 3.70 (0.00) | 4.33 (0.00) | 4.61 (0.00) | 3.70 (0.00) |
+| 2009 | MDE (slope) | 0.041 | 0.037 | 0.040 | 0.041 |
+| 2013 | linear slope (p) | −0.023 (0.019) | −0.021 (0.014) | −0.021 (0.026) | −0.023 (0.019) |
+| 2013 | joint Wald (p) | 3.81 (0.00) | 6.25 (0.00) | 4.17 (0.00) | 3.81 (0.00) |
+| 2013 | MDE (slope) | 0.026 | 0.024 | 0.026 | 0.026 |
+
+- **2009**: the linear pre-trend slope is small and **not significant** (p 0.18–0.72) under
+  every comparison group — passes the slope test — **but the joint pre-trend Wald rejects**
+  (p≈0).
+- **2013**: a significant negative pre-trend slope (≈ −0.02/yr, p 0.01–0.03) — **fails the
+  slope test** — and the joint Wald also rejects.
+
+**Caveat on the joint Wald.** It rejects (p≈0) for *every* cohort/estimator, with 8–12
+restrictions against only 3–7 treated clusters. This is exactly the over-rejection regime
+documented in the B-chain (`RESULTS_verification_B.md`): joint pre-trend Wald tests
+massively over-reject when restrictions ≳ treated clusters, so these joint p-values are not
+trustworthy evidence of a real pre-trend. The **one-restriction linear-slope test is the
+reliable read**: 2009 is flat (passes), 2013 trends (fails). Either way, the two
+highest-weight *testable* stacked cohorts do **not** both pass a clean pre-test — the
+weight that isn't on untestable cohorts sits on cohorts that are themselves borderline
+(2013 fails) or fail the joint test (2009), so "testable" is not "passes".
+
+New/updated outputs: `d6_bridge_cs_imputation.csv`, `d6_pretests_2009_2013.csv`; the table
+and all three figures now carry the fourth (Cengiz) panel.
+
+---
+
+## Round 3 (items 1–3)
+
+**1. Robust inference for the 2009/2013 pre-tests — CR1 vs restricted wild cluster
+bootstrap (Webb, B=999 slope / 499 joint) vs randomization inference over never-treated
+placebo cohorts (B=999).** `d6_pretests_2009_2013_robust.csv`. (fwildclusterboot is not
+installable here; WCR is implemented by hand — restricted bootstrap-t for the slope,
+restricted Wald bootstrap for the joint test. Cengiz ≡ CS, both never-treated.)
+
+| cohort | comparison | slope | slope CR1 | slope WCR | slope RI | joint CR1 | joint WCR | joint RI |
+|---|---|---|---|---|---|---|---|---|
+| 2009 | CS/Cengiz (never) | −0.006 | 0.71 | 0.71 | 0.74 | 0.00 | 0.31 | 0.006 |
+| 2009 | stacked (No-Change) | −0.018 | 0.18 | 0.24 | 0.33 | 0.00 | 0.50 | 0.003 |
+| 2009 | imputation (never+not-yet) | −0.005 | 0.72 | 0.70 | 0.74 | 0.00 | 0.19 | 0.002 |
+| 2013 | CS/Cengiz (never) | −0.023 | 0.019 | 0.092 | 0.131 | 0.00 | 0.54 | 0.001 |
+| 2013 | stacked (No-Change) | −0.021 | 0.014 | 0.125 | 0.160 | 0.00 | 0.57 | 0.001 |
+| 2013 | imputation (never+not-yet) | −0.021 | 0.026 | 0.105 | 0.150 | 0.00 | 0.55 | 0.001 |
+
+- **The CR1 joint rejection is confirmed to be an over-rejection artifact.** CR1 gives
+  joint p = 0 everywhere; the restricted wild cluster bootstrap gives **0.19–0.57 (no
+  rejection)** for all six. This is precisely the B-chain finding (joint Wald over-rejects
+  when restrictions ≫ treated clusters), now shown directly on these cohorts.
+- **2013's "significant" slope does not survive either.** CR1 p = 0.014–0.026 rises to
+  **WCR 0.09–0.13 and RI 0.13–0.16** — not significant at 5% once the 3-treated-cluster
+  count is handled. 2009's slope is non-significant under every method.
+- **RI-joint rejects (p ≈ 0.001–0.006), but that is a mismatched-reference artifact, not
+  evidence of a pre-trend:** the placebo null draws from the 41 never-treated agencies, so
+  its Wald distribution is far tighter than the real 3–7-treated-cluster sampling
+  distribution, making the observed Wald look extreme. The slope RI (a single, scale-free
+  coefficient) is better behaved and agrees with WCR.
+- **Bottom line:** under few-cluster-correct inference (restricted WCR, the recommended
+  procedure), **neither 2009 nor 2013 shows a significant pre-trend — slope or joint.** The
+  round-2 CR1 rejections (2013 slope; all joint) were small-cluster artifacts. So the two
+  highest-weight *testable* stacked cohorts do pass their pre-tests once inference accounts
+  for the handful of treated clusters — which strengthens, not weakens, the reliance on
+  those few cohorts, since the untestable/early cohorts still carry no check at all.
+
+**2. Predicted vs. actual CS–imputation per-cohort gap (droppers).**
+`d6_gap_predicted_vs_actual.csv`, `figures/d6_gap_predicted_vs_actual.*`. Predicted gap =
+`slope_g × (pre_g − 1)/2`, with `slope_g` the cohort's differential linear pre-trend vs
+never-treated; actual = `τ̂_imp − τ̂_CS` (cohort averages). **Correlation 0.50 (n = 9;**
+cohorts 2001–2002 excluded, `pre_g < 3` so no estimable slope). The direction is right for
+most cohorts and the biggest actual gaps (2017, 2018, 2013) are correctly signed but
+*under-predicted* in magnitude; 2019 is the one sign flip. So an extrapolated linear
+pre-trend accounts for roughly half of the per-cohort CS–imputation disagreement — real
+and in the predicted direction, but not the whole story (the remainder is nonlinear
+pre-trends, effect dynamics, and small-cohort noise). This is consistent with the bridge
+result that the gap is a Layer-2 (counterfactual) phenomenon.
+
+**3. Cengiz panel caption (done).** All three figures now carry: "Panel B2 (Cengiz ±4):
+only cohorts 2004–2016 have a full ±4 window in 2000–2020; cohorts with pre_g < 4
+(2001–2003) are EXCLUDED by the window, not down-weighted to zero."
+
+New outputs: `d6_pretests_2009_2013_robust.csv`, `d6_gap_predicted_vs_actual.csv`,
+`figures/d6_gap_predicted_vs_actual.*`.
+
+---
+
+## Round 4 (items 1–3)
+
+**1. Exact CS–imputation gap at s=1 (event time 0) + own/inherited decomposition.**
+`d6_gap_identity_s1.csv`, main figure `d6_gap_decomposition.*`.
+Δ̂^Imp_{g,0} := τ̂_imp(g,g) − τ̂_CS-NYT(g,g) (imputation FE counterfactual vs Callaway–
+Sant'Anna with not-yet-treated controls, varying base = g−1).
+
+> **The "inherited" framing below is superseded by round 5.** Round 5 shows, via Lemma 1's
+> correct pre-*average* baseline, that the s=1 gap is 100% the block bias with zero imbalance
+> (the panel is balanced); the small round-4 remainder was an artifact of the last-pre-period
+> baseline, not inheritance. The exact gap values and the 2001=0 verification below stand.
+
+- **Verified:** cohort **2001 gap = −2.7e-11** (≈ 0 to 1e-8) — Denver has a single
+  untreated pre-period, so its imputation residual at g−1 is identically zero. 2002 gap =
+  **−0.250**. The own/inherited split sums to the gap **exactly** (max |own+inh−gap| = 0).
+- The gap is **overwhelmingly the own last-pre-period block bias**; the inherited
+  adjustment-cohort term (imputation's γ̂ being pooled over all untreated obs rather than
+  cohort g's initial control group) is small everywhere — e.g. 2017: own −0.681 vs
+  inherited −0.046; 2002: own −0.234 vs inherited −0.016; |inherited| ≤ 6% of the gap.
+- **Correction (round-5 / cleanup):** round 4 described `N_k/(Σ_{j≥k}N_j + N_∞)` as the
+  attribution of the finite-sample *estimate* gap across cohorts — that is **wrong**. Those
+  are Liu Props 2.1/2.2 weights in the **population bias decomposition** of the imputation
+  estimator (how `E[τ̂] − τ` loads on cohorts under a DGP), not a decomposition of the
+  observed τ̂_imp − τ̂_CS-NYT. Round 5 shows the s=1 estimate gap is fully the Lemma-1 block
+  bias with no inherited term, so these weights play no role here; the file that tabulated
+  them (`d6_liu_weights.csv`) has been **removed** to avoid implying otherwise.
+- The round-3 linear-slope predicted-vs-actual plot is moved to the appendix
+  (`d6_appendix_gap_linear_slope.*`); this block-bias decomposition is the main gap figure.
+
+**2. mde_g via slope-only restricted wild cluster bootstrap (Webb, B=999), all cohorts.**
+`d6_mde_wcr.csv`, figure `fig_weight_checkability_d6_v2_wcrmde.*`; `n_treated_clusters` added.
+mde = Zc·SE_WCR, SE_WCR = SD of restricted bootstrap slopes.
+
+- The CR1 mde **badly understates** the detectable slope for **single-treated-cluster**
+  cohorts: e.g. CS 2018 0.007 → **0.094** (14×), 2008 0.022 → 0.082, 2019 0.006 → 0.081;
+  but for the 7-cluster cohort **2009 it barely moves** (0.041 → 0.042). With one treated
+  cluster the cluster-robust analytic SE is essentially meaningless; WCR restores an honest
+  (much wider) interval.
+- **Ranking reshuffle (checkability, low mde = more checkable):** under WCR the high-weight
+  **2009 jumps from least-checkable (CR1 rank #8) to #3–4**, while the single-unit late
+  cohorts (2018, 2019) become the *least* checkable. Every estimator's ordering changes for
+  most cohorts (full list in the run log / `d6_mde_wcr.csv`). The qualitative picture holds
+  — the top-weight untestable cohort 2002 is still off the axis — but the mde-based ordering
+  among *testable* cohorts is an artifact of CR1 until WCR corrects it, and 2009's weight
+  then sits on a moderately-checkable (not extreme-mde) cohort.
+
+**3. RI diagnostic + size-matched joint RI (presented, not adjudicated).**
+`d6_ri_diagnostics.csv`, `d6_ri_sizematched.csv`.
+
+| cohort | treated mean_y / var_y / officers | never-pool mean_y / var_y / officers |
+|---|---|---|
+| 2009 | 0.49 / 0.25 / 521 | 0.20 / 0.16 / 950 |
+| 2013 | 0.51 / 0.26 / 798 | 0.24 / 0.18 / 950 |
+
+Treated cohorts have **higher pre-period outcome mean and variance** (and fewer officers)
+than the never-treated placebo pool. Redrawing the placebo cohorts from **size-matched**
+never-treated agencies does **not** close the RI rejection:
+
+| cohort | joint p — WCR (mean) | joint RI unmatched | joint RI size-matched |
+|---|---|---|---|
+| 2009 | 0.332 | 0.006 | 0.002 |
+| 2013 | 0.551 | 0.006 | 0.002 |
+
+So the RI–WCR disagreement is not a size-composition artifact — it survives matching on
+agency size, pointing instead to the outcome level/variance gap between treated cohorts and
+the never-treated pool. WCR (resampling the actual treated clusters) does not reject; RI
+(against a calmer, higher-N never-treated null) does. Both are reported; neither is declared
+correct here.
+
+New outputs: `d6_gap_identity_s1.csv`, `d6_gap_decomposition.*`,
+`d6_mde_wcr.csv`, `fig_weight_checkability_d6_v2_wcrmde.*`, `d6_ri_diagnostics.csv`,
+`d6_ri_sizematched.csv`, `d6_appendix_gap_linear_slope.*`. (`d6_liu_weights.csv` was removed
+in cleanup — see round 5.)
+
+---
+
+## Round 5 (items 1–4, final)
+
+**Note on the paper.** The Liu (2025) PDF (arXiv:2509.01829) was not present in the
+checkout or the remote branch, and arxiv.org is blocked by the egress proxy, so it could
+not be opened here. Item 1 uses the Lemma-1 simple-means formula **as stated in the brief**
+and verifies it reproduces the FE gap exactly.
+
+**1. Lemma 1 check — and a correction to round 4.** `d6_lemma1_full.csv`,
+`d6_lemma1_balanced.csv`; figure `d6_gap_decomposition.*` (relabeled).
+Δ̂^Imp_{g,0} = (Ȳ^T_{g−1} − Ȳ^T_{pre-avg}) − (Ȳ^C_{g−1} − Ȳ^C_{pre-avg}), computed from
+simple means, C = never-treated ∪ {cohorts g′>g}, unit-equal weighting, independent of the
+stage-1 fit.
+
+- **Scope: this equivalence is an s=1 (first treated period) result — Liu Lemma 1 only.**
+  "imputation = simple-means block DiD" holds at event time 0 because the imputed Y(0) for
+  period g uses only genuinely-untreated pre-period data. For s > 1 it does **not** carry
+  over: BJS/imputation builds later counterfactuals sequentially and the horizon-s
+  prediction reuses previously *imputed* values, so τ̂_imp(g,g+s) is no longer a clean
+  simple-means long difference. Everything below is about s=1.
+- The droppers sample is **already fully balanced** (781/781 agencies have complete
+  2000–2020 fatal-encounters outcomes), so **at s=1** the FE imputation **is** the
+  simple-means long-difference DiD. Δ̂^Imp **equals the FE gap_s1 to 1e-10 on both** the full
+  droppers sample (max |remainder| = 0.0000) **and** the balanced subpanel (max 1.2e-10).
+  Lemma 1 verified; the imbalance remainder is **zero** (there is no imbalance to attribute).
+- **This corrects round 4.** The round-4 "inherited adjustment-cohort term" (≤6% of the
+  gap) was **not inheritance** — it was an artifact of using the last-pre-period *FE
+  residual* as the baseline instead of Lemma 1's pre-period *average*. With the correct
+  pre-average baseline, **the s=1 gap is 100% the Lemma-1 block bias**; there is no
+  inherited term and (on this balanced panel) no imbalance. The figure is relabeled
+  accordingly (blue = Δ̂^Imp; orange = imbalance ≈ 0). The Liu Props 2.1/2.2 `N_k/(…)`
+  weights are a **population bias** decomposition (`E[τ̂]−τ`), not an attribution of the
+  observed estimate gap, so they play no role here; `d6_liu_weights.csv` was removed.
+
+**2. Contribution table.** `d6_gap_contributions.csv`. Contribution_g = w_g ·
+(τ̂_imp,g − τ̂_CS-NYT,g), cohort-average over post-periods, at common (imputation = CS
+simple) weights.
+
+| cohort | w_g | gap_avg_g | contribution |
+|---|---|---|---|
+| 2002 | 0.293 | −0.242 | **−0.071** |
+| 2017 | 0.046 | −0.715 | **−0.033** |
+| 2013 | 0.093 | −0.267 | **−0.025** |
+| 2009 | 0.324 | +0.050 | +0.016 |
+| 2004 | 0.066 | +0.128 | +0.008 |
+| 2018 | 0.012 | −0.620 | −0.007 |
+| others | | | ≤ |0.005| each |
+
+Sum = **−0.1194 = imputation ATT (−0.043) − CS-NYT ATT (+0.076)** (ties out exactly with
+the round-2 bridge). **Top 3 cohorts (2002/2017/2013) = 75% of the total |contribution|.**
+Reconciliation with round 2: round 2 flagged 2013/2017/**2018** by *unweighted per-cohort
+estimate* differences; once weighted, **2017 and 2013 persist**, **2002 becomes the single
+biggest contributor** (large weight × moderate gap), and **2018 drops out** — its huge
+per-cohort gap (−0.62) rides on a negligible weight (0.012), contributing only −0.007. So
+the aggregate CS-imputation disagreement is a 2002/2017/2013 phenomenon.
+
+**3. testable_g = FALSE when n_treated_clusters = 1.** `d6_untestable_ncluster.csv`; figure
+`fig_weight_checkability_d6_v2_ncluster.*`. With no valid few-cluster inference for a single
+treated cluster, the untestable weight share rises sharply:
+
+| estimator | untestable (old) | untestable (n_g=1 → untestable) | single-unit cohorts flipped |
+|---|---|---|---|
+| CS (simple) | 0.37 | **0.54** | 6 |
+| stacked (R2) | 0.00 | **0.23** | 6 |
+| stacked Cengiz | 0.00 | **0.25** | 3 |
+| imputation (BJS) | 0.37 | **0.54** | 6 |
+
+Only **2009, 2013, 2017** (the multi-treated-unit cohorts) remain testable in any panel.
+Over half of CS/imputation weight and roughly a quarter of stacked weight sits on cohorts
+whose pre-trend cannot be tested with valid inference — the sharpest form of the core claim.
+
+**4. RI matched on pre-period outcome mean.** `d6_ri_meanmatched.csv`.
+
+| cohort | joint p — WCR | RI unmatched | RI size-matched | RI **mean-matched** |
+|---|---|---|---|---|
+| 2009 | 0.332 | 0.006 | 0.002 | **0.064** |
+| 2013 | 0.551 | 0.006 | 0.002 | **0.024** |
+
+Matching placebo cohorts on **pre-period outcome mean** (not size) moves RI toward WCR:
+2009 no longer rejects at 5% (0.006 → 0.064), 2013 is much weaker (0.024). This confirms the
+round-4 diagnostic — the RI–WCR disagreement was driven by the **outcome-level** gap between
+treated cohorts and the never-treated pool, not agency size. Reported alongside WCR; not
+adjudicated.
+
+New outputs: `d6_lemma1_full.csv`, `d6_lemma1_balanced.csv`, `d6_gap_contributions.csv`,
+`d6_untestable_ncluster.csv`, `fig_weight_checkability_d6_v2_ncluster.*`,
+`d6_ri_meanmatched.csv`, and the relabeled `d6_gap_decomposition.*`.
+
+---
+
+## Cleanup (post round 5, no new estimation)
+
+**1. Scope of "imputation = simple-means block DiD".** Added to round 5: this holds at **s=1
+only** (Liu Lemma 1). For s>1 the BJS/imputation counterfactual is built sequentially and
+reuses previously imputed values, so τ̂_imp(g,g+s) is not a clean simple-means long
+difference.
+
+**2. Liu weights relabeled/removed.** `N_k/(Σ_{j≥k}N_j+N_∞)` are Liu Props 2.1/2.2
+**population bias-decomposition** weights (how `E[τ̂]−τ` loads on cohorts under a DGP), **not**
+an attribution of the finite-sample estimate gap τ̂_imp−τ̂_CS-NYT. The round-4 text that
+implied otherwise is corrected above, and `d6_liu_weights.csv` is removed (the generating
+block in `d6_round4.R` is commented out; the round-4 gap figure, superseded, is no longer
+written by that script).
+
+**3. Joint pre-test rank is correct (one period already dropped).** Liu block biases sum to
+zero over pre-periods, so the pre-period VCV has rank pre_g−1. The round-2/3 joint test uses
+an event-study with reference period g−1 (`i(year, D, ref=g-1)` on pre-period data), which
+**already drops one period**: for 2009 it tests the 8 coefficients for 2000–2007 (pre_g−1=8),
+VCV rank 8/8; for 2013 it tests 12 coefficients for 2000–2011 (pre_g−1=12), VCV rank 12/12.
+`wald(...)$df1` equals pre_g−1 in both cases and no generalized inverse is triggered, so the
+test is correctly specified — the CR1/WCR/RI joint p-values in rounds 3–4 stand and need no
+rerun.
+
+**4. Footnote (Liu §2.5) — imputation pre/post coefficients on a shared axis.** Where
+imputation event-time coefficients are shown pre and post on one axis, note: a pre-period
+block bias includes its own period's outcome Y_t in the baseline it is differenced against
+(the imputed Y(0) is fit on the pre-periods themselves), so pre- and post-period coefficients
+are **not** on a common "untreated-counterfactual" footing and should not be read as a single
+continuous event-study path. No D6 figure plots imputation pre/post event-time coefficients
+on a shared axis (the D6 panels plot weight vs. checkability, and the gap figure is at s=1
+only); this footnote is recorded for any such plot added later or elsewhere in the project.
