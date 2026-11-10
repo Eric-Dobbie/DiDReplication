@@ -36,7 +36,7 @@
 \doublespacing
 \addbibresource{bib/PoliceResidency.bib}
 
-\title{Replication of \textcite{payson2025residency}: An explainer of staggered adoption DiD estimators}
+\title{Estimator Selection Diagnostics in Staggered Differences-in-Differences}
 \author{Eric Dobbie}
 \date{\today}
 
@@ -45,7 +45,7 @@
 \maketitle
 
 \begin{abstract}
-    \noindent In settings with staggered treatment adoption, two-way fixed effects estimators have been shown to produce biased estimates of the average treatment effect on the treated (ATT) when treatment effects are heterogeneous. A growing family of estimators addresses this problem through reweighting of ``clean comparisons,'' where the bias inducing comparisons to earlier treated units are removed from the analysis. Through a replication exercise of \textcite{payson2025residency}, with an application to police residency requirements, a policy setting with staggered adoption across municipalities, I show that these estimators can disagree, leading to point estimates with different signs, under high levels of treatment effect heterogeneity. I demonstrate that one of the primary results of \textcite{payson2025residency} requires a set of assumptions to all hold, and relaxing even one of these assumptions leads to the ATT estimate losing significance.
+    \noindent In settings with staggered treatment adoption, two-way fixed effects estimators have been shown to produce biased estimates of the average treatment effect on the treated (ATT) when treatment effects are heterogeneous. A family of estimators addresses this problem through reweighting of ``clean comparisons,'' where the bias inducing comparisons to earlier treated units are removed from the analysis. I demonstrate this weighting phenomenon through an application to \textcite{payson2025residency}, which studies the effect of police residency requirements on fatal encounters, a policy setting with staggered adoption across municipalities. I show that the weights given to individual clean comparisons are determined exclusively by panel geometry and that these weights do not necessarily correspond in favorable ways to the ability to assess parallel trend violations within each comparison. Researchers can recover all possible weighting vectors ex-ante, without specifying an outcome model, and see if they are able to identify meaningful pre-trends in advance of any analysis.
 \end{abstract}
 
 \newpage
@@ -121,10 +121,11 @@ While \textcite{callaway2021difference} propose using the $ATT(g,t)$ as the targ
 As described above, stacked regression is typically estimated as a single pooled regression with one ATT as the target. Despite this, it still fits in the class of reweighting estimators as the comparisons within each stack are always clean and the pooled effect is a non-negatively weighted average of stack-specific effects (see Appendix). \textcite{wing2024stacked} show this convex decomposition when the treatment share is constant across stacks. However, the result presented in the appendix generalizes their finding to any stacked panel regardless of treatment share or panel balance. Fundamentally, stacked regressions targets a single pooled ATT with the same building blocks, the $\text{ATT}(g,t)$, under an implicit weighting scheme. \textcite{wing2024stacked} and the generalized proof in the appendix show that these weights are given by the share of residualized treatment variation within the stack-specific effects.\footnote{It is also possible to form calendar effects and event study estimates using a stacked regression framework, as shown in \textcite{cengiz2019effect} and \textcite{wing2024stacked}. For the purposes of this replication, the focus is limited to disaggregation to cohort-level effects.}
 
 
-\section{\textcite{payson2025residency} Replication}
+\section{Application to \textcite{payson2025residency}}
 
 \begin{itemize}
-    \item The estimates are sensitive to estimator selection, which sets of assumptions are necessary for their result to hold (still negative and significant)?
+    \item What do the weights look like across the menu of weights?
+    \item How checkable are the cohorts with high weights?
     \item Answer each of the following questions to build out a case that the result is fragile:
     \begin{enumerate}
         \item How did they construct stacks?
@@ -156,14 +157,16 @@ In general, the use of never-changing units as controls rather than never-treate
 
 In constructing a stacked dataset, researchers must make choices about the number of periods to include before and after treatment within each stack. \textcite{payson2025residency} utilize the full panel of available data in the construction of the stacked datasets, which is in contrast to standard stacked dataset construction \parencite{cengiz2019effect, baker2022much, wing2024stacked} where a standard number of pre-treatment and post-treatment periods must be included for each stack. This means that there is variation introduced in the number of pre-treatment and post-treatment periods across cohorts. For example, the stack at $g = 2018$ has 18 pre-treatment periods and 3 post-treatment periods while the stack at $g = 2004$ has 4 pre-treatment periods and 17 post-treatment periods. The consequence of this is that early adopters provide more years of post-treatment data, which could skew the pooled estimate if the treatment effect is dynamic over time. Additionally, as stacks require parallel trends to hold over the full pretreatment periods, later adopters face a rather strict version of the parallel trends assumption whereby parallel trends must hold for the full pre-treatment time span.
 
-To test sensitivity to the number of included periods, the stacks can be reconstructed using a variety of temporal bounds.\footnote{For this exercise I will utilize a symmetrical window around treatment timing such that, in the notation of Section \ref{sec:cc_const}, $k = k_p = k_a$ and each stack includes periods $[g - k, g+k]$. The symmetric window is not necessary, it simply reduces the number of possible windows.}
+To test sensitivity to the number of included periods, the stacks can be reconstructed using a variety of temporal bounds.\footnote{For this exercise I will utilize a symmetrical window around treatment timing such that, in the notation of Section \ref{sec:cc_const}, $k = k_p = k_a$ and each stack includes periods $[g - k, g+k]$. The symmetric window is not necessary, it simply reduces the number of possible windows.} Figure \ref{fig:window} shows how various symmetric windows change the pooled coefficient from the stacked regression. The X-axis in the figure represents the window hal-width, or the number of pre-treatment and post-treatment periods. The Y-axis tracks the pooled regression coefficient with shaded $95\%$ confidence intervals. Each point is labeled with the number of eligible cohorts for that set symmetric window size. Notice that the number of eligible cohorts reduces as the window size increases. This is a consequence of the number of years in the panel. Once the window requires too many periods for a unit to provide a full window of support, that cohort drops from the stacked dataset. 
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{}
-    \caption{Caption}
-    \label{fig:placeholder}
+    \includegraphics[width=0.75\linewidth]{figures/cengiz_window_sensitivity.png}
+    \caption{Varying symmetric window around treatment timing for stack construction.}
+    \label{fig:window}
 \end{figure}
+
+By varying the windows from $\pm 2$ to $\pm 9$ periods pre-and-post treatment, the sensitivity of the negative, significant result to windowing becomes clear. First, for no symmetric window is the point estimate significant at $95\%$ confidence levels. Second, the magnitude of the estimated effect is substantially reduced at smaller windows, with the narrowest windows moving close to zero effect. The effects converge towards the full sample estimated effect as the number of periods increases and more of the boundary cohorts drop from the estimation. This is partially an artifact of the 2009 cohort effect being proximate to the pooled effect in addition to it being the only cohort that fully survives the expansion of the window to $\pm 9$.
 
 \subsection{Stack Decomposition}
 
@@ -176,6 +179,8 @@ It is worth understanding why some of these cohorts are unable to be identified.
 The 2016 cohort is also unable to be estimated for an entirely different reason. Portsmouth, NH adopted a residency requirement in 2003, meaning that it is the lone adopter in that period, which, as shown above, does not produce a coefficient based on a lack of control units. In 2016, Portsmouth dropped their requirement. Based on the method used to construct stacks, Portsmouth's data for 2000-2015 are contained in the 2003 stack. The 2016 cohort then gets only Portsmouth's data from 2016-2020. As this cohort now contains no pretreatment data for the only treated cohort, the 2016 cohort produces no coefficient and contributes nothing to the pooled estimate. This is the same pattern applied to Memphis, TN, which reverses it's policy in 2009 after first switching in 2004. In general, policy reversals that occur within stacking windows lead to a sharp boundary on any change following the first change in treatment status.\footnote{In Table \ref{tab:stack-composition} these units are referred to as ``Boundary Reversal'' units for any change after their first policy change. In this setting, that only applies to Memphis and Portsmouth.} As a consequence, Portsmouth changes policy twice and contributes nothing to the pooled estimate as reported in the base stacked specification. In 2003 it has no comparison units and in 2016 it is a boundary reversal, leading to both changes dropping from the analysis.
 
 \subsection{Alternate Estimators}
+
+The decomposition shows that the stacked approach throws out useful information from several treatment cohorts by failing to assign them clean controls. Even with the full panel inclusion approach, which partially avoids the dropping of cohorts due to a lack of data at the boundary, only 11 of the 15 cohorts contribute any weight to the pooled regression output. This is not a consequence of the panel structure itself, it is, instead, a result of researcher choices in selecting a stacked regression approach to the staggered treatment problem. By imposing a stricter version of PT through a universal base period against never-treated controls, \textcite{callaway2021difference} and \textcite{sun2021estimating} allow those dropped cohort effects to be recovered, with the exception of the 2000 cohort which has no pre-treatment periods with observed outcomes to form comparisons.
 
 \subsection{Leave one out Validation}
 
@@ -402,3 +407,7 @@ Substituting into the pooled expression:
 \input{tables/Appendix_tables/spec_grid}
 
 \end{document}
+
+Framing: People use a few different things to deal with staggered treatment
+
+Make P&P the example not the point
