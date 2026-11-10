@@ -1,0 +1,5 @@
+n = 71 = 41 never-treated + 30 treated
+Wpval = NULL 
+pooled pre vcov rank 31 of 127 
+max|V - crossprod(IF)/n| = 0 
+2009 block max|corr_anal - corr_boot| = 0.04492486 
