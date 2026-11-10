@@ -125,6 +125,25 @@ ggsave(file.path(FIG,"fig_d7_geometry_sweep.pdf"),g,width=11,height=6,device=cai
 ggsave(file.path(FIG,"fig_d7_geometry_sweep.png"),g,width=11,height=6,dpi=200)
 file.copy(file.path(FIG,"fig_d7_geometry_sweep.png"),file.path(OUT,"fig_d7_geometry_sweep.png"),overwrite=TRUE)
 
+# ---- paper figures: split into two titleless panels, axis labels per request --
+mk_split<-function(col,file){ d<-SUM
+  d$timing<-factor(d$timing,levels=c("early","spread","late"))
+  d$xg<-factor(paste0("T",d$T,"\n",ifelse(d$size=="equal","eq","conc")),levels=c("T10\neq","T10\nconc","T25\neq","T25\nconc"))
+  d$estimator<-factor(d$estimator,levels=c("CS","imputation","stacked")); d$U<-d[[col]]
+  p<-ggplot(d,aes(xg,U,color=estimator,shape=estimator,group=estimator))+
+    geom_point(size=3,position=position_dodge(width=0.5))+
+    facet_wrap(~timing,nrow=1)+ ylim(0,1)+
+    scale_color_manual(values=c(CS="#0072B2",imputation="#009E73",stacked="#D55E00"),name=NULL)+
+    scale_shape_manual(values=c(CS=16,imputation=17,stacked=15),name=NULL)+
+    labs(x="Panel Geometry",y="Unchecked Weight")+
+    theme_minimal(base_size=12)+theme(panel.grid.minor=element_blank(),legend.position="top",
+      panel.spacing=unit(0.8,"lines"),axis.text.x=element_text(size=8))
+  ggsave(file.path(FIG,paste0(file,".pdf")),p,width=10,height=3.9,device=cairo_pdf)
+  ggsave(file.path(FIG,paste0(file,".png")),p,width=10,height=3.9,dpi=200)
+  file.copy(file.path(FIG,paste0(file,".png")),file.path(OUT,paste0(file,".png")),overwrite=TRUE) }
+mk_split("U_inf","fig_d7_checkable")        # U(infinity): testability / checkable
+mk_split("U_0.25","fig_d7_wellchecked")     # U at break-even theta*=0.25 / well-checked
+
 # ---- CS-vs-stacked discrimination (for the writeup) -------------------------
 cat("\n=== CS vs stacked gap in U (for RESULTS) ===\n")
 w<-reshape(SUM[,c("geom","timing","T","size","estimator","U_inf","U_0.25")],idvar=c("geom","timing","T","size"),timevar="estimator",direction="wide")
