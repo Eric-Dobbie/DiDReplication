@@ -1,0 +1,21 @@
+\begin{tabular}{lcc}
+\toprule
+Specification & Deck sample & Droppers sample \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Panel A: Stacked regression}} \\
+P\&P specification (additive FE, covariates, entropy weights) & $-0.091^{*}$ (0.037) & --- \\
+\quad Drop entropy weights & $-0.103^{*}$ (0.039) & --- \\
+\quad Drop covariates & $-0.104^{*}$ (0.039) & --- \\
+\quad Agency $\times$ stack FE & $-0.099^{*}$ (0.040) & $-0.119^{*}$ (0.047) \\
+\quad $\pm 4$ window, non-changer controls & $-0.062$ (0.069) & --- \\
+\quad $\pm 4$ window, never-treated controls only & $-0.089$ (0.068) & $-0.093$ (0.078) \\
+\addlinespace
+\multicolumn{3}{@{}l}{\emph{Panel B: Alternative estimators (simple aggregation)}} \\
+Callaway--Sant'Anna, never-treated controls & $0.045$ (0.065) & $0.065$ (0.082) \\
+Callaway--Sant'Anna, not-yet-treated controls & $0.056$ (0.067) & $0.076$ (0.083) \\
+Imputation & --- & $-0.043$ (0.058) \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+{\footnotesize \noindent Outcome is an indicator for any fatal encounter. Standard errors clustered by agency in parentheses; imputation standard error from a cluster bootstrap. $^{*}p<0.05$. The droppers sample excludes the six agencies that adopted a requirement and the two absorbed reversals; imputation requires absorbing treatment and is estimated on this sample only. All rows after the first use no covariates or weights unless noted; Panel B uses simple aggregation.\par}

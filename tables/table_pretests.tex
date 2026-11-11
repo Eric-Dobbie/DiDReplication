@@ -1,0 +1,14 @@
+\begin{tabular}{lccccccc}
+\toprule
+& & & \multicolumn{3}{c}{Slope test $p$-value} & & \\
+\cmidrule(lr){4-6}
+Cohort & Treated clusters & Stacked weight & CR1 & WCR & RI & MDE (WCR) & Tolerance ($\theta^{*}{=}0.10$) \\
+\midrule
+2009 & 7 & 0.369 & 0.182 & 0.237 & 0.329 & 0.040 & 0.0095 \\
+2013 & 3 & 0.153 & 0.014 & 0.125 & 0.160 & 0.041 & 0.0095 \\
+2017 & 3 & 0.100 & $<0.001$ & 0.026 & 0.013 & 0.041 & 0.0095 \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+{\footnotesize \noindent Linear pre-trend tests against each stack's clean controls, droppers sample. CR1: cluster-robust; WCR: restricted wild cluster bootstrap with Webb weights; RI: randomization inference over never-treated placebo cohorts. MDE is the minimum detectable trend per year at $\alpha = 0.05$ and 80 percent power. Tolerance is the break-even slope $\theta^{*}/a_g$ (Equation~\ref{eq:breakeven}). Stacked weights are from the deck sample (Table~\ref{tab:stack_decomp}).\par}

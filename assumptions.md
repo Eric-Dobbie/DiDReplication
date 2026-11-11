@@ -1371,3 +1371,5 @@ st$agency_stack <- paste(st$agency.id, st$cohort, sep = "__")
 # interacted FE (correct): any.fatalities ~ no.req + <covs> | agency_stack + year.cohort | 0 | agency.id
 # covs = log.pop + log.med.inc + pct.white + pct.white.officers.imputed
 ```
+
+| `d8_tables.R` | paper Table 2 (spec ladder) + Table 3 (stacked pre-tests) → `tables/table_ladder.tex`, `tables/table_pretests.tex`, booktabs, generated from committed CSVs. Item 1: the −0.062 ±4 run uses NON-CHANGER (741) controls (mislabeled "never-treated"; `cengiz_window_sensitivity.R`), −0.089 uses strictly never-treated (41, D6 B2); window figure = non-changer run. Starred rows: P&P + agency×stack FE (1–4). `tab:stack_decomp` label added to `decomp_table.{R,tex}`. See RESULTS_d8.md. |
