@@ -82,7 +82,9 @@ cat(sprintf("CS weights vs canonical CS-NT simple (droppers): max|diff| = %.2e\n
 # Stacked: fwl canonical w_s vs closed form with the stack's actual control count.
 # Use the ESTIMATION window (observed outcome, 2000-2020, T=21) -- the sample the FWL w_s
 # were computed on -- not the full 1987-2020 stack panel.
-fw<-read.csv(file.path(OUT,"fwl_decomp_unweighted.csv")); st0<-read.csv(file.path(DATA,"stacked_fatal.csv"))
+pp_data<-file.path(DATA,"stacked_fatal.csv")
+if(file.exists(pp_data)){
+fw<-read.csv(file.path(OUT,"fwl_decomp_unweighted.csv")); st0<-read.csv(pp_data)
 st<-st0[!is.na(st0$any.fatalities),]; Tpp<-length(unique(st$year))   # 21
 sg<-sort(unique(st$cohort))
 ng_st<-sapply(sg,function(g) length(unique(st$agency.id[st$cohort==g & st$treat==1])))
@@ -99,6 +101,7 @@ cat("  largest gaps:\n"); print(transform(cmp[order(-abs(cmp$diff)),][1:4,c("sta
 cat("  attribution: (i) 2002: CONTROLS DEFINITION -- closed form uses nc=0 -> V_s=0, canonical gets V_s>0 from the within-treated adopter contrast;\n")
 cat("               (ii) 2016 (and other single-treated reversals): the real stacked fit gives V_s=0 (collinear/no within-stack contrast), closed form gives nonzero;\n")
 cat("               (iii) remaining gaps (2009, 2004): IMBALANCE -- closed form assumes a balanced common-pool stack, but the real stack mixes 41 never + ~700 always-treated controls.\n")
+} else cat("P&P closed-form-vs-canonical w_s validation SKIPPED (data/stacked_fatal.csv absent; figures and sweep are data-independent).\n")
 
 # =============================================================================
 # FIGURE: U(inf) and U at theta*=0.25, 12 geometries grouped by timing
@@ -106,7 +109,7 @@ cat("               (iii) remaining gaps (2009, 2004): IMBALANCE -- closed form 
 library(tidyr)
 plt<-SUM[,c("T","timing","size","estimator","U_inf","U_0.25")]
 plt<-pivot_longer(plt,cols=c("U_inf","U_0.25"),names_to="Utype",values_to="U")
-plt$Utype<-factor(plt$Utype,levels=c("U_inf","U_0.25"),labels=c("U(infinity): testability only","U at break-even theta*=0.25"))
+plt$Utype<-factor(plt$Utype,levels=c("U_inf","U_0.25"),labels=c("Untestable Weight","Underpowered Weight"))
 plt$timing<-factor(plt$timing,levels=c("early","spread","late"))
 plt$xg<-factor(paste0("T",plt$T,"\n",ifelse(plt$size=="equal","eq","conc")),
   levels=c("T10\neq","T10\nconc","T25\neq","T25\nconc"))
@@ -116,9 +119,9 @@ g<-ggplot(plt,aes(xg,U,color=estimator,shape=estimator,group=estimator))+
   facet_grid(Utype~timing)+ ylim(0,1)+
   scale_color_manual(values=c(CS="#0072B2",imputation="#009E73",stacked="#D55E00"))+
   scale_shape_manual(values=c(CS=16,imputation=17,stacked=15))+
-  labs(x="geometry (grouped by timing; T and size profile)",y="unchecked weight U",
-    title="D7 analytic geometry sweep: unchecked weight by estimator",
-    subtitle="rows: U(infinity) = untestable weight vs U at break-even theta*=0.25 ; cols: adoption timing")+
+  labs(x="geometry (grouped by timing; T and size profile)",y="Weight",
+    title="D7 analytic geometry sweep: diagnostic weight by estimator",
+    subtitle="rows: untestable weight (MDE=infinity) vs underpowered weight at break-even theta*=0.25 ; cols: adoption timing")+
   theme_minimal(base_size=11)+theme(panel.grid.minor=element_blank(),legend.position="top",
     panel.spacing=unit(0.8,"lines"),axis.text.x=element_text(size=7))
 ggsave(file.path(FIG,"fig_d7_geometry_sweep.pdf"),g,width=11,height=6,device=cairo_pdf)
@@ -126,7 +129,7 @@ ggsave(file.path(FIG,"fig_d7_geometry_sweep.png"),g,width=11,height=6,dpi=200)
 file.copy(file.path(FIG,"fig_d7_geometry_sweep.png"),file.path(OUT,"fig_d7_geometry_sweep.png"),overwrite=TRUE)
 
 # ---- paper figures: split into two titleless panels, axis labels per request --
-mk_split<-function(col,file){ d<-SUM
+mk_split<-function(col,file,ylab){ d<-SUM
   d$timing<-factor(d$timing,levels=c("early","spread","late"))
   d$xg<-factor(paste0("T",d$T,"\n",ifelse(d$size=="equal","eq","conc")),levels=c("T10\neq","T10\nconc","T25\neq","T25\nconc"))
   d$estimator<-factor(d$estimator,levels=c("CS","imputation","stacked")); d$U<-d[[col]]
@@ -135,14 +138,14 @@ mk_split<-function(col,file){ d<-SUM
     facet_wrap(~timing,nrow=1)+ ylim(0,1)+
     scale_color_manual(values=c(CS="#0072B2",imputation="#009E73",stacked="#D55E00"),name=NULL)+
     scale_shape_manual(values=c(CS=16,imputation=17,stacked=15),name=NULL)+
-    labs(x="Panel Geometry",y="Unchecked Weight")+
+    labs(x="Panel Geometry",y=ylab)+
     theme_minimal(base_size=12)+theme(panel.grid.minor=element_blank(),legend.position="top",
       panel.spacing=unit(0.8,"lines"),axis.text.x=element_text(size=8))
   ggsave(file.path(FIG,paste0(file,".pdf")),p,width=10,height=3.9,device=cairo_pdf)
   ggsave(file.path(FIG,paste0(file,".png")),p,width=10,height=3.9,dpi=200)
   file.copy(file.path(FIG,paste0(file,".png")),file.path(OUT,paste0(file,".png")),overwrite=TRUE) }
-mk_split("U_inf","fig_d7_checkable")        # U(infinity): testability / checkable
-mk_split("U_0.25","fig_d7_wellchecked")     # U at break-even theta*=0.25 / well-checked
+mk_split("U_inf","fig_d7_checkable","Untestable Weight")         # U(infinity): testability / checkable
+mk_split("U_0.25","fig_d7_wellchecked","Underpowered Weight")    # U at break-even theta*=0.25 / well-checked
 
 # ---- CS-vs-stacked discrimination (for the writeup) -------------------------
 cat("\n=== CS vs stacked gap in U (for RESULTS) ===\n")
