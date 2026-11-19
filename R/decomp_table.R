@@ -41,7 +41,7 @@ L <- c(
   "shown as ``--''; 2000/2001/2003 have no clean controls and no reverse-direction",
   "contrast, and 2016's lone treated unit is absorbed. The pooled coefficient equals",
   "$\\sum_s w_s\\beta_s$ to machine precision (see \\texttt{fwl\\_decomp.R}).}",
-  "\\label{tab:decomp}",
+  "\\label{tab:decomp}\\label{tab:stack_decomp}",
   "\\begin{tabular}{lrrrr}",
   "\\toprule",
   "& \\multicolumn{2}{c}{Unweighted (R2)} & \\multicolumn{2}{c}{Weighted (ebal)} \\\\",
