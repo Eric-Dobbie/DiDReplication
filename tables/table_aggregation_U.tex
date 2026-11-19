@@ -1,0 +1,36 @@
+\begin{tabular}{lccc}
+\toprule
+Aggregation & $U(\infty)$ & $U(\theta^{*}{=}0.05)$ & $U(\theta^{*}{=}0.10)$ \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Callaway--Sant'Anna, never-treated controls}} \\
+\quad Simple & 0.243 & 1.000 & 1.000 \\
+\quad Cohort (group) & 0.292 & 1.000 & 1.000 \\
+\quad Event study, overall & 0.292 & 1.000 & 1.000 \\
+\quad Calendar, overall & 0.292 & 1.000 & 1.000 \\
+\addlinespace
+\multicolumn{4}{@{}l}{\emph{Callaway--Sant'Anna, not-yet-treated controls}} \\
+\quad Simple & 0.243 & 1.000 & 1.000 \\
+\quad Cohort (group) & 0.292 & 1.000 & 1.000 \\
+\quad Event study, overall & 0.292 & 1.000 & 1.000 \\
+\quad Calendar, overall & 0.292 & 1.000 & 1.000 \\
+\addlinespace
+\multicolumn{4}{@{}l}{\emph{Sun--Abraham, never-treated controls}} \\
+\quad Simple & 0.243 & 1.000 & 1.000 \\
+\quad Cohort (group) & 0.292 & 1.000 & 1.000 \\
+\quad Event study, overall & 0.292 & 1.000 & 1.000 \\
+\quad Calendar, overall & 0.292 & 1.000 & 1.000 \\
+\addlinespace
+\multicolumn{4}{@{}l}{\emph{Imputation (BJS/Gardner)}} \\
+\quad Simple & 0.243 & 1.000 & 1.000 \\
+\quad Cohort (group) & 0.292 & 1.000 & 1.000 \\
+\quad Event study, overall & 0.292 & 1.000 & 1.000 \\
+\quad Calendar, overall & 0.292 & 1.000 & 1.000 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Reference rows (single implied weighting)}} \\
+\quad Stacked, full panel (agency $\times$ stack FE) & 0.232 & 1.000 & 1.000 \\
+\quad Cengiz $\pm 4$, never-treated controls & 0.250 & 1.000 & 1.000 \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+{\footnotesize \noindent Droppers sample (\S4.3--4.5 analysis sample). $U$ is the aggregation weight on cohorts whose pre-trend slope test cannot detect a trend large enough to bias the estimand by $\theta^{*}$ ($\mathrm{MDE}_g>\theta^{*}/a_g$); $U(\infty)$ is the weight on cohorts with no feasible pre-test ($\mathrm{MDE}_g=\infty$). Per-cohort MDEs are the round-6 WCR values (\texttt{d6\_round6\_mde.csv}) for each estimator's comparison group. Sun--Abraham uses never-treated controls and therefore shares Callaway--Sant'Anna (never-treated)'s geometry and MDEs. Baseline period $b_g$: $g-1$ for Callaway--Sant'Anna, Sun--Abraham; the mean of cohort $g$'s pre-periods for imputation. Weights reproduce \texttt{did::aggte} with default settings (simple $\propto n_g$ per post cell; group $= P(G{=}g)$; event-study and calendar equally weight their horizons/periods). Reference rows carry the single implied weighting of each design (round-6 values).\par}
