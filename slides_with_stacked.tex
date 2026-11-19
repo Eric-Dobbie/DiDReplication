@@ -70,7 +70,7 @@
 \begin{frame}{Staggered Treatment DiD}
     \begin{itemize}
         \item Common applied DiD settings are complicated, with treatments being applied at different time periods for different geographic units.
-        \item These setting are especially common in policy evaluation settings, where policy is not adopted uniformly across different jurisdictions.
+        \item These settings are especially common in policy evaluation settings, where policy is not adopted uniformly across different jurisdictions.
         \item Typical applied work uses TWFE estimators in these applications
     \end{itemize}
 \end{frame}
@@ -115,63 +115,54 @@
 \end{frame}
 
 \begin{frame}{Existing Advice}
-         The advice the literature currently puts forward identifies the key tradeoffs in estimator selection without putting forward actionable suggestions for selection.
+         The existing literature treats estimator selection as a selection of parallel trends assumptions.
          
          \vspace{5mm}
 
          \begin{itemize}
+             \item More pre-treatment periods lead to more efficiency; a $g-1$ baseline is more robust to violations in PT in other periods. \parencite{roth2023s, callaway2023difference}
              \item Reanalyzing 49 published studies, \textcite{chiu2026causal} find that these modern estimators reach qualitatively similar conclusions while producing highly variable estimates. 
              \begin{itemize}
                  \item The authors suggest using imputation estimators because they have more power (from using all pre-treatment periods) and match closer to TWFE in the outcome model.
              \end{itemize}
-             \item \textcite{roth2023s} state that researchers face an efficiency-robustness tradeoff in estimator selection based on PT assumptions. They say this should be the basis for estimator selection. 
-             \begin{itemize}
-                 \item \textcite{callaway2023difference} makes this view more concrete by pointing out that the differences in PT assumptions can be boiled down to the following comparison: More periods $\Rightarrow$ more efficient; fewer periods
-              $\Rightarrow$ more robust to violations in some periods
-             \end{itemize}
-             
+             \item Disagreement between estimators gives reason to doubt the stronger parallel trends assumption. \parencite{marcus2021role, chen2025efficient}
+             \item Pre-tests have low power, so they should be paired with sensitivity analysis. \parencite{roth2022pretest, rambachan2023more, liu2025cohort} 
          \end{itemize}
-
-        \vspace{5mm}
-
 \end{frame}
 
 \begin{frame}{Where I Contribute}
-    This paper contributes to this literature in two ways:
+    \begin{alertblock}{The Claim}
+        The cohorts that receive high weights in aggregation (to event-study effects, calendar effects, or a single ATT) are not necessarily the same cohorts that are sufficiently powered for pre-tests of PT. These aggregation weights and pre-trend power are ex-ante observable without estimating any treatment effects.
+    \end{alertblock}
     \begin{enumerate}
         \item \textbf{Weights are a function of panel geometry.}
         \begin{itemize}
-            \item Every weighting scheme, including stacked regression, is a function of (1) treatment timing and (2) cohort size. This means that weighting vector disagreement can be examined ex ante, prior to running any estimator.
+            \item Every weighting scheme, including stacked regression, depend only on treatment timing, the observation window, and cohort size.
         \end{itemize}
-        \item \textbf{Traditional PT tests are a function of this same geometry.}
+        \item \textbf{Pre-test power is a function of this same geometry.}
         \begin{itemize}
-            \item Early adopters are less able to be ``checked'' for PT holding in the pre-treatment periods (simply because they have less of them)
-            \item Later adopters face a different issue, they can possibly have more periods than treated clusters.
-                    \end{itemize}
-            \item It is \textit{not} necessarily the case that these properties interact in beneficial ways. \textbf{It is possible that cohorts with few pretreatment periods receive high weights from some weighting vector choices and cohorts with ``checkable'' identification assumptions are not weighted highly}. 
-
+            \item A valid test needs at least two pre-treatment periods, the estimation comparison group, and at least two treated clusters
+            \item Early adopters face a double penalty: the fewest pre-periods (low power) and the longest post-periods (lowest tolerance).
+        \end{itemize}
     \end{enumerate}
-
 \end{frame}
 
-\begin{frame}{What does ``checkable'' mean?}
+\begin{frame}{When can we do a pre-test?}
 
-Generally, there are two components:
-
-\begin{enumerate}
-    \item Can we check at all?
+Generally, there are three components:
     \begin{itemize}
         \item The cohort is observed untreated long enough for there to be a pre-trend.
         \item There is a comparison group that stays untreated through that same pre-trend window.
         \item That comparison group is the same comparison group used as a baseline in effect estimation.
     \end{itemize}
-    \item How well can we check it?
-    \begin{itemize}
-        \item The data allow us to detect a trend violation.
-    \end{itemize}
-\end{enumerate}
+
+
     All of these factors are fixed by panel geometry. Adoption timing, cohort sizes, and data coverage are deterministic, as they are with the weights, and nothing makes these factors agree with the weighting vector.
 
+\end{frame}
+
+\begin{frame}{How well powered is the test?}
+    When we can do a test, we can define the power of the test by the minimum de
 \end{frame}
 
 
@@ -476,7 +467,7 @@ The second assumption here is nonstandard.
 
 \begin{frame}{The standard assumptions break the result}
 
-Using the standard window based approach does lead to the results losing signigicance.
+Using the standard window based approach does lead to the results losing significance.
 
 \begin{figure}
     \centering
